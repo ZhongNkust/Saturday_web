@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的個人介紹網頁</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #5a5a5a;
+        }
+        h3 {
+            color: #007bff; /* 為標題設定一個強調色 */
+            margin-top: 25px; /* 增加間距 */
+        }
+        p {
+            line-height: 1.6;
+        }
+        img.profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ddd;
+            margin-bottom: 15px; /* 新增間距 */
+        }
+        .social-links {
+            margin-top: 20px;
+        }
+        .social-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .social-links a:hover {
+            text-decoration: underline;
+        }
+        /* 新增技能列表樣式 */
+        ul {
+            list-style-type: none; /* 移除點點 */
+            padding: 0;
+        }
+        li {
+            display: inline-block; /* 讓項目橫向排列 */
+            background-color: #e9ecef;
+            color: #333;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>個人介紹</h1>
+
+        <img class="profile-pic" src="info.jpg" alt="黃于忠個人照片">
+        <p style="margin-top: 0;">大家好！我是進四子四甲的學生。</p>
+        <p>這是我的網路應用程式設計的個人介紹頁。</p>
+        
+        <hr>
+        
+        <h3>基本資料</h3>
+            <p>姓名：黃于忠</p>
+            <p>學號：C111252124</p>
+            <p>科系：電子系</p>
+        
+        <hr>
+
+        <h3>興趣與技能</h3>
+        <p>我的興趣是打遊戲，什麼類型都玩。</p>
+        <p>同時正在學習軟體相關的編譯，主要學習的語言如下</p>
+        <ul>
+            <li>HTML/CSS</li>
+            <li>JavaScript</li>
+            <li>Python</li>
+            <li>Arduino</li>
+        </ul>
+        
+        <hr>
+        
+        <h3>聯絡方式</h3>
+        <p>Email: <a href="mailto:C111252124@nkust.edu.tw">C111252124@nkust.edu.tw</a></p>
+        
+        <div class="social-links">
+            <a href="https://github.com/ZhongNkust/Saturday_web" target="_blank">GitHub</a>
+        </div>
+
+        <hr>
+        
+        <h3>其他分頁</h3>
+        <ul>
+            <li><a href="remote_control.html">遠端控制家電開關</a></li>
+            <li><a href="health_management.html">個人健康管理頁面</a></li>
+        </ul>
+
+    </div>
+</body>
+</html>
