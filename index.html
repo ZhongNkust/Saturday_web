@@ -23,6 +23,10 @@
         h1 {
             color: #5a5a5a;
         }
+        h3 {
+            color: #007bff; /* 為標題設定一個強調色 */
+            margin-top: 25px; /* 增加間距 */
+        }
         p {
             line-height: 1.6;
         }
@@ -32,6 +36,7 @@
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid #ddd;
+            margin-bottom: 15px; /* 新增間距 */
         }
         .social-links {
             margin-top: 20px;
@@ -44,31 +49,68 @@
         .social-links a:hover {
             text-decoration: underline;
         }
+        /* 新增技能列表樣式 */
+        ul {
+            list-style-type: none; /* 移除點點 */
+            padding: 0;
+        }
+        li {
+            display: inline-block; /* 讓項目橫向排列 */
+            background-color: #e9ecef;
+            color: #333;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>個人介紹</h1>
-        <p >大家好！我是進四子四甲的學生。</p>
+
+        <img class="profile-pic" src="your_photo.jpg" alt="黃于忠個人照片">
+        <p style="margin-top: 0;">大家好！我是進四子四甲的學生。</p>
         <p>這是我的網路應用程式設計的個人介紹頁。</p>
         
         <hr>
         
         <h3>基本資料</h3>
-            <p>姓名：黃于忠</p>
-            <p>學號：C111252124</p>
-            <p>科系：電子系</p>
+            <p>姓名：**黃于忠**</p>
+            <p>學號：**C111252124**</p>
+            <p>科系：**電子系**</p>
         
         <hr>
 
+        <h3>興趣與技能</h3>
+        <p>我熱衷於學習前端技術，並對物聯網應用充滿興趣。</p>
+        <ul>
+            <li>HTML/CSS</li>
+            <li>JavaScript</li>
+            <li>Python</li>
+            <li>Arduino</li>
+            <li>網路架構</li>
+        </ul>
+        
+        <hr>
+        
         <h3>聯絡方式</h3>
-        <p>Email: <a href="C111252124@nkust.edu.tw">C111252124@nkust.edu.tw</a></p>
+        <p>Email: <a href="mailto:C111252124@nkust.edu.tw">C111252124@nkust.edu.tw</a></p>
+        
+        <div class="social-links">
+            <a href="https://github.com/your-username" target="_blank">GitHub</a> | 
+            <a href="https://www.linkedin.com/in/your-profile" target="_blank">LinkedIn</a> |
+            <a href="https://www.facebook.com/your-profile" target="_blank">Facebook</a>
+        </div>
 
         <hr>
         
         <h3>其他分頁</h3>
-        <p>遠端控制家電開關</p>
-        <p>個人健康管理頁面</p>
+        <ul>
+            <li><a href="remote_control.html">遠端控制家電開關</a></li>
+            <li><a href="health_management.html">個人健康管理頁面</a></li>
+        </ul>
+
     </div>
 </body>
 </html>
