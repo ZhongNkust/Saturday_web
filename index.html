@@ -13,19 +13,19 @@
             text-align: center;
         }
         .container {
-            max-width: 600px;
+            max-width: 650px; /* 稍微放大容器以容納圖片 */
             margin: auto;
             background: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         h1 {
             color: #5a5a5a;
         }
-        h3 {
-            color: #007bff; /* 為標題設定一個強調色 */
-            margin-top: 25px; /* 增加間距 */
+        h3, h2 { /* 將h2也納入，使用與原h3相似的樣式 */
+            color: #007bff;
+            margin-top: 25px;
         }
         p {
             line-height: 1.6;
@@ -36,7 +36,7 @@
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid #ddd;
-            margin-bottom: 15px; /* 新增間距 */
+            margin-bottom: 15px;
         }
         .social-links {
             margin-top: 20px;
@@ -49,19 +49,60 @@
         .social-links a:hover {
             text-decoration: underline;
         }
-        /* 新增技能列表樣式 */
+        /* 技能列表樣式 (保持原樣式) */
         ul {
-            list-style-type: none; /* 移除點點 */
+            list-style-type: none;
             padding: 0;
+            text-align: center; /* 讓列表置中 */
         }
         li {
-            display: inline-block; /* 讓項目橫向排列 */
+            display: inline-block;
             background-color: #e9ecef;
             color: #333;
             padding: 5px 10px;
             margin: 5px;
             border-radius: 5px;
             font-size: 0.9em;
+        }
+
+        /* === 新增樣式：專題展示 === */
+        .project-showcase {
+            text-align: center; /* 讓圖片和按鈕置中 */
+            padding: 10px 0 20px 0;
+        }
+        
+        /* 新增：圖片畫廊容器 - 使用 Flexbox 實現並排 */
+        .image-gallery {
+            display: flex;
+            justify-content: center; /* 讓圖片整體置中 */
+            gap: 15px; /* 圖片間距 */
+            margin-bottom: 20px;
+        }
+
+        /* 修改：單張圖片樣式，用於並排縮放 */
+        .project-img {
+            width: 48%; /* 佔用約一半的寬度，實現並排等比縮小 */
+            height: auto;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+            /* 移除原有的 margin-bottom */
+        }
+        
+        .download-button {
+            display: inline-block; 
+            background-color: #28a745; 
+            color: white !important; 
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .download-button:hover {
+            background-color: #218838; 
+            transform: translateY(-2px); 
+            text-decoration: none;
         }
     </style>
 </head>
@@ -94,6 +135,26 @@
         
         <hr>
         
+        <h3>專題介紹</h3>
+        
+        <div class="project-showcase">
+            <div class="image-gallery">
+                <img src="project_screenshot_1.jpg" alt="展示效果_1" class="project-img">
+                <img src="project_screenshot_2.jpg" alt="展示效果_2" class="project-img">
+            </div>
+
+            <p>這個我們自己使用JS所開發的血氧偵測軟體。</p>
+            <p>能夠透過藍芽連線到血氧機，測量時可以在手機中即時顯示並記錄追蹤數據。</p>
+            <p>設計的初衷是希望能讓大家在家裡能夠簡易的紀錄、追蹤身體的健康狀態。</p>
+            <p>如果對此軟體有興趣，也歡迎下載檔案並協助我們做更多的更新。</p>
+            
+            <a href="project.apk" class="download-button" download>
+                下載 APK 檔案
+            </a>
+        </div>
+        
+        <hr>
+
         <h3>聯絡方式</h3>
         <p>Email: <a href="mailto:C111252124@nkust.edu.tw">C111252124@nkust.edu.tw</a></p>
         
