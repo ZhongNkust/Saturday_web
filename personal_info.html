@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的個人介紹網頁</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            /* 修改 body 背景色為淡藍色 */
+            background-color: #f8f4e6; 
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 650px;
+            margin: auto;
+            /* 修改容器背景色為更淡的藍白色 */
+            background: #f0f8ff; 
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #5a5a5a;
+        }
+        h3, h2 {
+            color: #007bff;
+            margin-top: 25px;
+        }
+        p {
+            line-height: 1.6;
+        }
+        img.profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ddd;
+            margin-bottom: 15px;
+        }
+        .social-links {
+            margin-top: 20px;
+        }
+        .social-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .social-links a:hover {
+            text-decoration: underline;
+        }
+        /* 技能列表樣式 */
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
+        }
+        li {
+            display: inline-block;
+            /* 修改技能列表項背景色為灰色 */
+            background-color: #e0e0e0; 
+            color: #333;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        /* 專題連結在列表中的樣式 */
+        .project-link-icon {
+            margin-left: 5px;
+            color: #0e4cd1;
+        }
+
+        /* === Modal 彈出視窗樣式 === */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            /* 修改 Modal 內容背景色，與容器背景協調 */
+            background-color: #f8ffff; 
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: left;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content h4 {
+            color: #007bff;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-align: center;
+        }
+        
+        /* 圖片畫廊樣式 */
+        .image-gallery {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .project-img {
+            width: 47%;
+            height: auto;
+            border-radius: 6px;
+            box-shadow: none;
+        }
+        
+        .modal-content p {
+            text-align: justify;
+        }
+        
+        .modal-content .download-button {
+            display: block;
+            width: calc(100% - 40px);
+            margin: 20px auto 10px auto;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <h1>個人介紹</h1>
+
+        <img class="profile-pic" src="info.jpg" alt="黃于忠個人照片">
+        <p style="margin-top: 0;">大家好！我是進四子四甲的學生。</p>
+        <p>這是我的網路應用程式設計的個人介紹頁。</p>
+        
+        <hr>
+        
+        <h3>基本資料</h3>
+            <p>姓名：黃于忠</p>
+            <p>學號：C111252124</p>
+            <p>科系：電子系</p>
+        
+        <hr>
+
+        <h3>興趣與技能</h3>
+        <p>我的興趣是打遊戲，什麼類型都玩。</p>
+        <p>同時正在學習軟體相關的編譯，主要學習的語言如下</p>
+        <ul>
+            <li>HTML/CSS</li>
+            <li id="javascript-li" style="cursor: pointer;">JavaScript <span class="project-link-icon">★ 實際應用</span></li>
+            <li>Python</li>
+            <li>Arduino</li>
+        </ul>
+        
+        <hr>
+        
+        <h3>聯絡方式</h3>
+        <p>Email: <a href="mailto:C111252124@nkust.edu.tw">C111252124@nkust.edu.tw</a></p>
+        
+        <div class="social-links">
+            <a href="https://github.com/ZhongNkust/Saturday_web" target="_blank">GitHub</a>
+        </div>
+
+    </div>
+    
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h4>專題：血氧偵測軟體</h4>
+            
+            <div class="image-gallery">
+                <img src="project_screenshot_1.jpg" alt="展示效果_1" class="project-img">
+                <img src="project_screenshot_2.jpg" alt="展示效果_2" class="project-img">
+            </div>
+
+            <p>這是我們使用JavaScript所開發的血氧偵測軟體。</p>
+            <p>它能夠透過血氧機的藍牙連線到手機，測量時可以在手機中即時顯示並記錄追蹤數據。</p>
+            <p>設計的初衷是希望能讓大家在家裡能夠簡易的紀錄、追蹤身體的健康狀態。</p>
+            <p>如果對此軟體有興趣，也歡迎下載檔案並協助我們做更多的更新。</p>
+            
+            <a href="project.apk" class="download-button" download>
+                下載 APK 檔案
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // Modal 彈窗功能
+        var modal = document.getElementById("projectModal");
+        var li = document.getElementById("javascript-li"); 
+        var span = document.getElementsByClassName("close-btn")[0];
+
+        li.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        // === 分頁製作中提示功能 ===
+        function alertInProcess(linkElement) {
+            alert("頁面目前仍在製作中，敬請期待！");
+            return false;
+        }
+    </script>
+</body>
+</html>
