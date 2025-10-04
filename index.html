@@ -13,7 +13,7 @@
             text-align: center;
         }
         .container {
-            max-width: 650px; /* 稍微放大容器以容納圖片 */
+            max-width: 650px;
             margin: auto;
             background: white;
             padding: 30px;
@@ -23,7 +23,7 @@
         h1 {
             color: #5a5a5a;
         }
-        h3, h2 { /* 將h2也納入，使用與原h3相似的樣式 */
+        h3, h2 {
             color: #007bff;
             margin-top: 25px;
         }
@@ -49,11 +49,11 @@
         .social-links a:hover {
             text-decoration: underline;
         }
-        /* 技能列表樣式 (保持原樣式) */
+        /* 技能列表樣式 */
         ul {
             list-style-type: none;
             padding: 0;
-            text-align: center; /* 讓列表置中 */
+            text-align: center;
         }
         li {
             display: inline-block;
@@ -63,46 +63,86 @@
             margin: 5px;
             border-radius: 5px;
             font-size: 0.9em;
-        }
-
-        /* === 新增樣式：專題展示 === */
-        .project-showcase {
-            text-align: center; /* 讓圖片和按鈕置中 */
-            padding: 10px 0 20px 0;
+            cursor: pointer; /* 讓列表項有可點擊的感覺 */
         }
         
-        /* 新增：圖片畫廊容器 - 使用 Flexbox 實現並排 */
+        /* 專題連結在列表中的樣式 */
+        .project-link-icon {
+            margin-left: 5px;
+            color: #0e4cd1;
+        }
+
+        /* === Modal 彈出視窗樣式 === */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: left;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content h4 {
+            color: #007bff;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-align: center; /* 讓 Modal 內的標題置中 */
+        }
+        
+        /* 圖片畫廊樣式 (從原來的專題區塊調整過來) */
         .image-gallery {
             display: flex;
-            justify-content: center; /* 讓圖片整體置中 */
-            gap: 15px; /* 圖片間距 */
+            justify-content: center;
+            gap: 15px;
             margin-bottom: 20px;
         }
 
-        /* 修改：單張圖片樣式，用於並排縮放 */
         .project-img {
-            width: 48%; /* 佔用約一半的寬度，實現並排等比縮小 */
+            width: 47%; 
             height: auto;
             border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
-            /* 移除原有的 margin-bottom */
+            box-shadow: none; /* Modal 內移除陰影 */
         }
         
-        .download-button {
-            display: inline-block; 
-            background-color: #28a745; 
-            color: white !important; 
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            margin-top: 15px;
-            transition: background-color 0.3s, transform 0.2s;
+        .modal-content p {
+            text-align: justify; /* 讓 Modal 內文對齊 */
         }
-        .download-button:hover {
-            background-color: #218838; 
-            transform: translateY(-2px); 
-            text-decoration: none;
+        
+        /* Modal 內下載按鈕樣式 */
+        .modal-content .download-button {
+            display: block;
+            width: calc(100% - 40px);
+            margin: 20px auto 10px auto;
         }
     </style>
 </head>
@@ -128,33 +168,13 @@
         <p>同時正在學習軟體相關的編譯，主要學習的語言如下</p>
         <ul>
             <li>HTML/CSS</li>
-            <li>JavaScript</li>
+            <li>JavaScript <span id="javascript-li" class="project-link-icon">★ 實際應用</span></li>
             <li>Python</li>
             <li>Arduino</li>
         </ul>
         
         <hr>
         
-        <h3>專題介紹</h3>
-        
-        <div class="project-showcase">
-            <div class="image-gallery">
-                <img src="project_screenshot_1.jpg" alt="展示效果_1" class="project-img">
-                <img src="project_screenshot_2.jpg" alt="展示效果_2" class="project-img">
-            </div>
-
-            <p>這個我們自己使用JS所開發的血氧偵測軟體。</p>
-            <p>能夠透過藍芽連線到血氧機，測量時可以在手機中即時顯示並記錄追蹤數據。</p>
-            <p>設計的初衷是希望能讓大家在家裡能夠簡易的紀錄、追蹤身體的健康狀態。</p>
-            <p>如果對此軟體有興趣，也歡迎下載檔案並協助我們做更多的更新。</p>
-            
-            <a href="project.apk" class="download-button" download>
-                下載 APK 檔案
-            </a>
-        </div>
-        
-        <hr>
-
         <h3>聯絡方式</h3>
         <p>Email: <a href="mailto:C111252124@nkust.edu.tw">C111252124@nkust.edu.tw</a></p>
         
@@ -171,5 +191,55 @@
         </ul>
 
     </div>
+    
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h4>專題：血氧偵測軟體</h4>
+            
+            <div class="image-gallery">
+                <img src="project_screenshot_1.jpg" alt="展示效果_1" class="project-img">
+                <img src="project_screenshot_2.jpg" alt="展示效果_2" class="project-img">
+            </div>
+
+            <p>這是我們使用JavaScript所開發的血氧偵測軟體。</p>
+            <p>它能夠透過藍芽連線到血氧機，測量時可以在手機中即時顯示並記錄追蹤數據。</p>
+            <p>設計的初衷是希望能讓大家在家裡能夠簡易的紀錄、追蹤身體的健康狀態。</p>
+            <p>如果對此軟體有興趣，也歡迎下載檔案並協助我們做更多的更新。</p>
+            
+            <a href="project.apk" class="download-button" download>
+                下載 APK 檔案
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // 獲取 Modal 元素
+        var modal = document.getElementById("projectModal");
+
+        // 獲取觸發 Modal 的元素（JavaScript 技能列表項）
+        // 為了讓點擊整個 <li> 都能觸發，我將 ID 放在 <li> 上
+        var li = document.getElementById("javascript-li"); 
+
+        // 獲取關閉按鈕元素
+        var span = document.getElementsByClassName("close-btn")[0];
+
+        // 點擊 JavaScript 列表項時，顯示 Modal
+        li.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        // 點擊 關閉按鈕 (x) 時，隱藏 Modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // 點擊 Modal 視窗外部時，隱藏 Modal
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>
