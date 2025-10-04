@@ -8,7 +8,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
-            /* 米色 body 背景 */
+            /* Body 背景：柔和米色 (保留) */
             background-color: #f8f4e6; 
             color: #333;
             text-align: center;
@@ -16,8 +16,8 @@
         .container {
             max-width: 650px;
             margin: auto;
-            /* 淺藍色容器背景 */
-            background: #f0f8ff; 
+            /* 容器背景：淺米白色 (保留) */
+            background: #fcfcf5; 
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -28,25 +28,28 @@
             align-items: center;
         }
         h1 {
-            color: #5a5a5a;
+            /* 標題顏色使用深咖啡色 */
+            color: #4a3832; 
             font-size: 2.5em;
             margin-bottom: 5px;
         }
         h2 {
-            color: #535353;
+            /* 副標題顏色使用柔和的淺棕色 */
+            color: #7d6b5e; 
             font-size: 1.2em;
             margin-bottom: 20px;
             font-weight: normal;
         }
-        /* 自我介紹區塊樣式 (已加入固定大小設定) */
+        /* 自我介紹區塊樣式 (亮度降低) */
         .intro-box {
-            background-color: #ddc9dd; /* 淡紫色背景 */
+            /* === Intro Box 背景：柔和淺褐色 (降低亮度) === */
+            background-color: #e8dccb; 
             padding: 20px;
             margin: 20px 0;
             border-radius: 6px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             
-            /* === 固定大小設定 === */
+            /* === 固定大小設定 (保留) === */
             width: 600px;  
             height: 400px;
             
@@ -60,12 +63,13 @@
         .intro-box p {
             line-height: 1.6;
             margin: 5px 0; 
-            color: #555;
+            color: #333;
             padding: 0 10px;
         }
         .intro-box hr {
             width: 80%; 
-            border-top: 1px solid #ddd;
+            /* 分隔線使用柔和的淺棕色 (保留) */
+            border-top: 1px solid #c9b19e;
             margin: 15px 0;
         }
 
@@ -79,12 +83,13 @@
             justify-content: center;
             flex-wrap: wrap;
         }
-        /* 按鈕預設顏色：淡藍色 */
+        /* 按鈕預設顏色：淺棕色 (降低亮度) */
         .page-links a {
             flex-grow: 1;
             padding: 15px 10px;
-            background-color: #bbdefb; /* 淺藍色背景 */
-            color: #004d99; /* 深藍色文字 */
+            /* === 按鈕背景：淺棕色/卡其色 (降低亮度) === */
+            background-color: #d4bca4; 
+            color: #4a3832; /* 深咖啡色文字，確保可讀性 */
             text-decoration: none;
             border-radius: 6px;
             font-weight: bold;
@@ -92,11 +97,12 @@
             max-width: 180px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        /* 滑鼠懸停顏色：略深一點的藍色 */
+        /* 滑鼠懸停顏色：深棕色 (降低亮度) */
         .page-links a:hover {
-            background-color: #90caf9; /* 略深藍色 */
+            /* === 懸停背景：中棕色 (降低亮度) === */
+            background-color: #c9a68a; 
             transform: translateY(-2px);
-            color: #007bff;
+            color: #4a3832; 
         }
         
         .nav-bar {
@@ -121,7 +127,7 @@
         </div>
         
         <div class="intro-box">
-            <h1>歡迎來到我的個人網頁</h1><hr>
+            <h1>歡迎來到我的個人網頁</h1>
             <h2>網路應用程式設計專題展示</h2>
             <hr>
             <p>我是高雄科技大學建工校區的學生黃于忠。</p>
