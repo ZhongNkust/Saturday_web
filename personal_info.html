@@ -75,7 +75,28 @@
             color: #0e4cd1;
         }
 
-        /* === Modal 彈出視窗樣式 === */
+        /* === 返回按鈕樣式 Start === */
+        .back-button {
+            background-color: #007bff; /* 藍色背景 */
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            display: block; /* 讓按鈕佔滿一行 */
+            width: 150px;
+            margin: 0 0 20px 0; /* 左上角定位，底部留出間距 */
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        /* === 返回按鈕樣式 End === */
+
+        /* === Modal 彈出視窗樣式 (省略未修改部分) === */
         .modal {
             display: none;
             position: fixed;
@@ -90,7 +111,6 @@
         }
 
         .modal-content {
-            /* 修改 Modal 內容背景色，與容器背景協調 */
             background-color: #f8ffff; 
             margin: 5% auto;
             padding: 20px;
@@ -152,6 +172,10 @@
 </head>
 <body>
     <div class="container">
+        
+        <button class="back-button" onclick="history.back()">
+            ← 返回上一頁
+        </button>
         
         <h1>個人介紹</h1>
 
@@ -230,7 +254,7 @@
             }
         }
         
-        // === 分頁製作中提示功能 ===
+        // 分頁製作中提示功能
         function alertInProcess(linkElement) {
             alert("頁面目前仍在製作中，敬請期待！");
             return false;
