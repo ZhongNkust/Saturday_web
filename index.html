@@ -8,14 +8,16 @@
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
-            background-color: #f4f4f4;
+            /* 修改 body 背景色為淡藍色 */
+            background-color: #e0f2f7; 
             color: #333;
             text-align: center;
         }
         .container {
             max-width: 650px;
             margin: auto;
-            background: white;
+            /* 修改容器背景色為更淡的藍白色 */
+            background: #f0f8ff; 
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -57,7 +59,8 @@
         }
         li {
             display: inline-block;
-            background-color: #e9ecef;
+            /* 修改技能列表項背景色為淺藍色 */
+            background-color: #bbdefb; 
             color: #333;
             padding: 5px 10px;
             margin: 5px;
@@ -72,7 +75,7 @@
             color: #0e4cd1;
         }
 
-        /* === Modal 彈出視窗樣式 (不變) === */
+        /* === Modal 彈出視窗樣式 === */
         .modal {
             display: none;
             position: fixed;
@@ -87,7 +90,8 @@
         }
 
         .modal-content {
-            background-color: #fefefe;
+            /* 修改 Modal 內容背景色，與容器背景協調 */
+            background-color: #f8ffff; 
             margin: 5% auto;
             padding: 20px;
             border-radius: 10px;
@@ -146,29 +150,31 @@
 
         /* === 頂部導覽列樣式 (實現三等份) === */
         .nav-bar {
-            display: flex; /* 啟用 Flexbox */
-            justify-content: space-between; /* 元素之間分配空間 */
+            display: flex;
+            justify-content: space-between;
             text-align: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
             border-bottom: 1px solid #ddd;
         }
         .nav-bar a {
-            flex-grow: 1; /* 讓每個連結平均佔據空間 */
+            flex-grow: 1;
             text-decoration: none;
             color: #555;
-            margin: 0 5px; /* 微調左右間距 */
+            margin: 0 5px;
             padding: 8px 10px;
             border-radius: 5px;
             transition: background-color 0.2s, color 0.2s;
             font-weight: bold;
         }
         .nav-bar a:hover {
-            background-color: #e9ecef;
+            /* 修改導覽列 hover 背景色，與技能列表項顏色一致 */
+            background-color: #bbdefb; 
             color: #007bff;
         }
         .nav-bar a.active {
-            background-color: #007bff;
+            /* 修改活動分頁背景色，與淡藍色系協調 */
+            background-color: #64b5f6; 
             color: white;
             box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
         }
@@ -178,7 +184,7 @@
     <div class="container">
 
         <nav class="nav-bar">
-            <a href="index.html" class="active">個人介紹　　</a>
+            <a href="index.html" class="active">　個人介紹　</a>
             <a href="#" onclick="alertInProcess(this)">遠端控制家電</a>
             <a href="#" onclick="alertInProcess(this)">個人健康管理</a>
         </nav>
@@ -264,9 +270,8 @@
         
         // === 分頁製作中提示功能 ===
         function alertInProcess(linkElement) {
-            var pageName = linkElement.textContent.trim(); // 取得連結的文字內容
-            alert(pageName + "頁面目前仍在製作中，敬請期待！");
-            return false; // 阻止連結跳轉（如果還有 href="#")
+            alert("頁面目前仍在製作中，敬請期待！");
+            return false;
         }
     </script>
 </body>
