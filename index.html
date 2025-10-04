@@ -63,7 +63,7 @@
             margin: 5px;
             border-radius: 5px;
             font-size: 0.9em;
-            cursor: pointer; /* 讓列表項有可點擊的感覺 */
+            cursor: pointer;
         }
         
         /* 專題連結在列表中的樣式 */
@@ -72,7 +72,7 @@
             color: #0e4cd1;
         }
 
-        /* === Modal 彈出視窗樣式 === */
+        /* === Modal 彈出視窗樣式 (不變) === */
         .modal {
             display: none;
             position: fixed;
@@ -116,10 +116,10 @@
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
             margin-top: 0;
-            text-align: center; /* 讓 Modal 內的標題置中 */
+            text-align: center;
         }
         
-        /* 圖片畫廊樣式 (從原來的專題區塊調整過來) */
+        /* 圖片畫廊樣式 */
         .image-gallery {
             display: flex;
             justify-content: center;
@@ -128,26 +128,61 @@
         }
 
         .project-img {
-            width: 47%; 
+            width: 47%;
             height: auto;
             border-radius: 6px;
-            box-shadow: none; /* Modal 內移除陰影 */
+            box-shadow: none;
         }
         
         .modal-content p {
-            text-align: justify; /* 讓 Modal 內文對齊 */
+            text-align: justify;
         }
         
-        /* Modal 內下載按鈕樣式 */
         .modal-content .download-button {
             display: block;
             width: calc(100% - 40px);
             margin: 20px auto 10px auto;
         }
+
+        /* === 頂部導覽列樣式 (實現三等份) === */
+        .nav-bar {
+            display: flex; /* 啟用 Flexbox */
+            justify-content: space-between; /* 元素之間分配空間 */
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .nav-bar a {
+            flex-grow: 1; /* 讓每個連結平均佔據空間 */
+            text-decoration: none;
+            color: #555;
+            margin: 0 5px; /* 微調左右間距 */
+            padding: 8px 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s, color 0.2s;
+            font-weight: bold;
+        }
+        .nav-bar a:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+        .nav-bar a.active {
+            background-color: #007bff;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+        }
     </style>
 </head>
 <body>
     <div class="container">
+
+        <nav class="nav-bar">
+            <a href="index.html" class="active">個人介紹　　</a>
+            <a href="#" onclick="alertInProcess(this)">遠端控制家電</a>
+            <a href="#" onclick="alertInProcess(this)">個人健康管理</a>
+        </nav>
+        
         <h1>個人介紹</h1>
 
         <img class="profile-pic" src="info.jpg" alt="黃于忠個人照片">
@@ -168,7 +203,7 @@
         <p>同時正在學習軟體相關的編譯，主要學習的語言如下</p>
         <ul>
             <li>HTML/CSS</li>
-            <li>JavaScript <span id="javascript-li" class="project-link-icon">★ 實際應用</span></li>
+            <li id="javascript-li" style="cursor: pointer;">JavaScript <span class="project-link-icon">★ 實際應用</span></li>
             <li>Python</li>
             <li>Arduino</li>
         </ul>
@@ -183,12 +218,6 @@
         </div>
 
         <hr>
-        
-        <h3>其他分頁</h3>
-        <ul>
-            <li><a href="remote_control.html">遠端控制家電開關</a></li>
-            <li><a href="health_management.html">個人健康管理頁面</a></li>
-        </ul>
 
     </div>
     
@@ -214,31 +243,30 @@
     </div>
     
     <script>
-        // 獲取 Modal 元素
+        // Modal 彈窗功能
         var modal = document.getElementById("projectModal");
-
-        // 獲取觸發 Modal 的元素（JavaScript 技能列表項）
-        // 為了讓點擊整個 <li> 都能觸發，我將 ID 放在 <li> 上
         var li = document.getElementById("javascript-li"); 
-
-        // 獲取關閉按鈕元素
         var span = document.getElementsByClassName("close-btn")[0];
 
-        // 點擊 JavaScript 列表項時，顯示 Modal
         li.onclick = function() {
             modal.style.display = "block";
         }
 
-        // 點擊 關閉按鈕 (x) 時，隱藏 Modal
         span.onclick = function() {
             modal.style.display = "none";
         }
 
-        // 點擊 Modal 視窗外部時，隱藏 Modal
         window.onclick = function(event) {
             if (event.target == modal) {
                 modal.style.display = "none";
             }
+        }
+        
+        // === 分頁製作中提示功能 ===
+        function alertInProcess(linkElement) {
+            var pageName = linkElement.textContent.trim(); // 取得連結的文字內容
+            alert(pageName + "頁面目前仍在製作中，敬請期待！");
+            return false; // 阻止連結跳轉（如果還有 href="#")
         }
     </script>
 </body>
