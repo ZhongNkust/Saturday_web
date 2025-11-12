@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-CAM 專題展示</title>
+    <style>
+        /* 繼承自您的個人頁面樣式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f8f4e6; /* 淡藍色背景 */
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            /* 讓容器可以容納 640px 的影像 */
+            max-width: 800px; 
+            margin: auto;
+            background: #f0f8ff; /* 更淡的藍白色容器背景 */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #5a5a5a;
+        }
+        h2 {
+            color: #007bff;
+            margin-top: 25px;
+        }
+        p {
+            line-height: 1.6;
+        }
+
+        /* === 返回按鈕樣式 Start (直接從您的原始碼複製) === */
+        .back-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            display: block; 
+            width: 150px;
+            margin: 0 0 20px 0; 
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        /* === 返回按鈕樣式 End === */
+
+        /* === ESP32-CAM 專用樣式 Start === */
+        .cam-section {
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        .cam-frame {
+            width: 640px; /* 影像寬度 640px */
+            height: 480px; /* 影像高度 480px */
+            border: 4px solid #333;
+            border-radius: 4px;
+            margin: 20px auto;
+            display: block;
+            background-color: #000; /* 模擬攝影機的黑色邊框/背景 */
+        }
+        
+        .cam-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 確保影像在框內完整顯示 */
+            display: block;
+        }
+
+        .cam-controls button {
+            background-color: #ff6600; /* 橙色按鈕，與您的藍色主題區隔 */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            margin: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .cam-controls button:hover {
+            background-color: #cc5200;
+        }
+        
+        .cam-controls button.off { 
+            background-color: #5a5a5a; /* 關閉狀態的灰色 */
+        }
+
+        /* 響應式設計：針對小螢幕調整影像大小 */
+        @media (max-width: 680px) {
+            .container {
+                max-width: 100%;
+                margin: 0;
+            }
+            .cam-frame {
+                width: 100%; /* 讓影像框在小螢幕上佔滿寬度 */
+                height: auto;
+                max-width: 400px; /* 限制最大寬度 */
+            }
+        }
+        /* === ESP32-CAM 專用樣式 End === */
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <button class="back-button" onclick="history.back()">
+            ← 返回上一頁
+        </button>
+        
+        <h1>即時監控</h1>
+        
+        <div class="cam-section">
+            <p>ESP32CAM展示及閃光燈控制</p>
+            <p style="font-size: 0.9em; color: #888;">注意：影像串流與控制功能僅當您的裝置與 ESP32-CAM 處於同一 Wi-Fi 網路時有效。</p>
+            
+            <hr>
+
+            <h2>即時影像串流</h2>
+            <div class="cam-frame">
+                <img id="cam-stream-img" class="cam-stream" src="http://192.168.43.100/capture" alt="ESP32-CAM 影像串流">
+            </div>
+
+            <div class="cam-controls">
+                <h2>閃光燈控制 (遠端 I/O 應用)</h2>
+                <button onclick="toggleFlash(true)" id="flash-on">💡 開啟閃光燈</button>
+                <button onclick="toggleFlash(false)" id="flash-off" class="off">💤 關閉閃光燈</button>
+            </div>
+        </div>
+
+    </div>
+    
+    <script>
+        // 設定 ESP32-CAM 的完整 IP 位址
+        // 🚨 再次提醒：請將此 IP 替換為您實際的 IP 🚨
+        const ESP32_CAM_IP = 'http://192.168.212.106'; 
+        const streamImage = document.getElementById('cam-stream-img');
+        
+        // --- 影像串流功能 (每 500ms 更新一次) ---
+        setInterval(() => {
+            // 每次請求都加上時間戳以避免瀏覽器快取
+            streamImage.src = ESP32_CAM_IP + '/capture?' + new Date().getTime();
+        }, 500); 
+
+        // --- 閃光燈控制功能 (與 ESP32 程式碼 /led 端點對應) ---
+        function toggleFlash(state) {
+            const stateString = state ? 'on' : 'off';
+            fetch(`${ESP32_CAM_IP}/led?state=${stateString}`)
+                .then(r => r.text())
+                .then(t => console.log(`Flash: ${stateString}`))
+                .catch(e => {
+                    console.error(`Error controlling flash: ${e}`);
+                    alert(`無法連線到 ESP32-CAM (IP: ${ESP32_CAM_IP})！請確認 Wi-Fi 連線。`);
+                });
+        }
+    </script>
+</body>
+</html>
