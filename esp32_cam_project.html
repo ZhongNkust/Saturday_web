@@ -160,11 +160,10 @@
             fetch(`${ESP32_CAM_IP}/led?state=${stateString}`)
                 .then(r => r.text())
                 .then(t => console.log(`Flash: ${stateString}`))
-                .catch(e => {
-                    console.error(`Error controlling flash: ${e}`);
-                    alert(`無法連線到 ESP32-CAM (IP: ${ESP32_CAM_IP})！請確認 Wi-Fi 連線。`);
-                });
-        }
+                
+                };
+        
     </script>
 </body>
+
 </html>
