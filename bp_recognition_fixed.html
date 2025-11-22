@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>血壓計影像辨識與記錄</title>
+    <style>
+        /* 繼承自您的個人頁面樣式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f8f4e6; /* 淡米白色背景 */
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px; 
+            margin: auto;
+            background: #f0f8ff; /* 淡藍白色容器背景 */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #5a5a5a;
+        }
+        h2 {
+            color: #007bff; /* 藍色主色 */
+            margin-top: 25px;
+        }
+        p {
+            line-height: 1.6;
+        }
+
+        /* === 返回按鈕樣式 (繼承自原頁面) === */
+        .back-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            display: block; 
+            width: 150px;
+            margin: 0 0 20px 0; 
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        
+        /* === 專屬樣式 Start === */
+        
+        /* 圖片上傳區域 */
+        #image-upload-area {
+            border: 3px dashed #007bff; /* 使用藍色虛線框 */
+            background-color: #e6f7ff; /* 極淺藍色背景 */
+            padding: 25px;
+            margin: 20px auto;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #image-upload-area:hover {
+            background-color: #cceeff;
+        }
+
+        /* 隱藏原生檔案輸入框 */
+        #fileInput {
+            display: none;
+        }
+
+        /* 圖片預覽框 (沿用 cam-frame 的視覺風格) */
+        #image-preview {
+            max-width: 100%;
+            max-height: 350px;
+            margin: 20px auto;
+            border: 4px solid #333; /* 深色邊框 */
+            border-radius: 4px;
+            display: none; /* 預設隱藏 */
+            object-fit: contain;
+            background-color: #000;
+        }
+        
+        /* 結果展示區 */
+        .result-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .result-box strong {
+            font-size: 1.5em;
+            color: #ff6600; /* 使用橙色突出結果 */
+        }
+
+        /* 功能按鈕 (辨識/儲存) */
+        .action-button {
+            background-color: #ff6600; /* 橙色按鈕，用於主要動作 */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            margin: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover:not(:disabled) {
+            background-color: #cc5200;
+        }
+
+        .action-button:disabled {
+            background-color: #5a5a5a; /* 關閉狀態的灰色 */
+            cursor: not-allowed;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 680px) {
+            .container {
+                margin: 0;
+            }
+            #image-preview {
+                width: 100%;
+            }
+        }
+        /* === 專屬樣式 End === */
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <button class="back-button" onclick="history.back()">
+            ← 返回上一頁
+        </button>
+        
+        <h1>血壓計影像辨識與數據記錄</h1>
+        
+        <p>請上傳血壓計顯示屏的圖片。</p>
+        <hr>
+
+        <div class="recognition-section">
+            <h2>上傳圖片</h2>
+            
+            <input type="file" id="fileInput" accept="image/*" onchange="previewImage()">
+            
+            <div id="image-upload-area" onclick="document.getElementById('fileInput').click()">
+                <p>點擊上傳血壓計圖片</p>
+            </div>
+            
+            <img id="image-preview" src="#" alt="上傳的圖片預覽">
+            
+            <button class="action-button" id="predict-button" onclick="predict()" disabled>
+                🧠 開始辨識數值
+            </button>
+            <p style="font-size: 0.9em; color: #888;">請先上傳圖片，再點擊開始辨識。</p>
+            <hr>
+
+            <h2>辨識結果與記錄</h2>
+            
+            <div class="result-box">
+                <p>收縮壓 (Systolic): <strong id="systolic-result">---</strong> mmHg</p>
+                <p>舒張壓 (Diastolic): <strong id="diastolic-result">---</strong> mmHg</p>
+            </div>
+            
+            <button class="action-button" id="save-button" onclick="saveToSheet()" disabled>
+                💾 記錄到 Google Sheet
+            </button>
+
+        </div>
+
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    
+    <script>
+        // Teachable Machine 模型的 URL (🚨 請替換為您自己的模型網址 🚨)
+        const URL = "YOUR_TEACHABLE_MACHINE_MODEL_URL/"; 
+        let model, maxPredictions;
+        const DEFAULT_VALUE = "---"; // 設定未成功辨識時的預設值
+
+        // 頁面載入時初始化模型
+        async function init() {
+            try {
+                const modelURL = URL + "model.json";
+                const metadataURL = URL + "metadata.json";
+
+                // 嘗試載入模型
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+                
+                // 載入成功時，確保數值為預設值 ---
+                document.getElementById('systolic-result').innerText = DEFAULT_VALUE;
+                document.getElementById('diastolic-result').innerText = DEFAULT_VALUE;
+                console.log("Teachable Machine 模型載入完成。");
+
+            } catch (error) {
+                // 這是您目前會遇到的情況 (URL為預留位置)
+                console.error("模型載入失敗，請檢查 URL (目前為預留位置): ", error);
+                
+                // 核心修正：即使載入失敗，也將兩個欄位都設回預設值 ---
+                document.getElementById('systolic-result').innerText = DEFAULT_VALUE; 
+                document.getElementById('diastolic-result').innerText = DEFAULT_VALUE;
+            }
+        }
+
+        // 圖片上傳預覽
+        function previewImage() {
+            const fileInput = document.getElementById('fileInput');
+            const preview = document.getElementById('image-preview');
+            const file = fileInput.files[0];
+
+            document.getElementById("predict-button").disabled = true; 
+            document.getElementById("save-button").disabled = true;
+            document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById("predict-button").disabled = false; 
+                    document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
+                    document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 圖片辨識函式 (待您完成模型訓練後，需要在此處補齊邏輯)
+        async function predict() {
+            document.getElementById("predict-button").innerText = "辨識中...";
+            document.getElementById("predict-button").disabled = true;
+            document.getElementById("systolic-result").innerText = "分析中...";
+            document.getElementById("diastolic-result").innerText = "分析中...";
+            
+            if (!model) {
+                alert("模型尚未載入，請確認網路連線或模型網址。");
+                document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
+                document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
+                document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
+                return;
+            }
+
+            const image = document.getElementById('image-preview');
+            let systolic = DEFAULT_VALUE;
+            let diastolic = DEFAULT_VALUE;
+            let isSuccessful = false;
+
+            try {
+                // 執行預測
+                const prediction = await model.predict(image); 
+
+                // ⚠️ 實際結果解析邏輯：請替換為您從 Teachable Machine 獲得的真正邏輯 ⚠️
+                // *************** START: 替換區 ***************
+                
+                // 目前使用隨機數作為成功範例
+                if (Math.random() < 0.8) { 
+                    systolic = Math.floor(Math.random() * (160 - 90 + 1)) + 90; 
+                    diastolic = Math.floor(Math.random() * (100 - 60 + 1)) + 60;
+                    isSuccessful = true;
+                } 
+                
+                // *************** END: 替換區 *****************
+
+            } catch (error) {
+                console.error("辨識過程發生錯誤:", error);
+                // 發生錯誤時，數值保持為 DEFAULT_VALUE ("---")
+            }
+
+
+            // 顯示結果
+            document.getElementById("systolic-result").innerText = systolic;
+            document.getElementById("diastolic-result").innerText = diastolic;
+
+            // 恢復按鈕
+            document.getElementById("predict-button").innerText = isSuccessful ? "✅ 辨識成功" : "❌ 辨識失敗，請重試";
+            document.getElementById("predict-button").disabled = false;
+            
+            // 只有當辨識成功且數值不為 "---" 時，才啟用儲存按鈕
+            if (systolic !== DEFAULT_VALUE && diastolic !== DEFAULT_VALUE) {
+                document.getElementById("save-button").disabled = false;
+            } else {
+                document.getElementById("save-button").disabled = true;
+            }
+        }
+
+        // 資料寫入 Google Sheet 函式
+        function saveToSheet() {
+            const systolic = document.getElementById("systolic-result").innerText;
+            const diastolic = document.getElementById("diastolic-result").innerText;
+
+            // 再次檢查數值是否有效
+            if (systolic === DEFAULT_VALUE || diastolic === DEFAULT_VALUE || isNaN(systolic) || isNaN(diastolic)) {
+                alert("辨識數值無效，無法儲存。");
+                return;
+            }
+
+            document.getElementById("save-button").innerText = "儲存中...";
+            document.getElementById("save-button").disabled = true;
+            
+            // 🚨 請替換為您 Google Apps Script 的 Web App URL 🚨
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; 
+            
+            const data = {
+                'timestamp': new Date().toLocaleString(),
+                'systolic': systolic,
+                'diastolic': diastolic
+            };
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                alert("血壓數據已成功記錄到 Google Sheet！");
+                document.getElementById("save-button").innerText = "💾 記錄完成";
+                document.getElementById("save-button").disabled = true;
+                document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
+            })
+            .catch(error => {
+                console.error('記錄失敗:', error);
+                alert("數據記錄失敗，請檢查 Google Script 設定。");
+                document.getElementById("save-button").innerText = "💾 記錄失敗";
+                document.getElementById("save-button").disabled = false;
+            });
+        }
+
+        // 啟動模型載入
+        init();
+    </script>
+</body>
+</html>
