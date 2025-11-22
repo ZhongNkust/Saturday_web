@@ -217,7 +217,7 @@
             const preview = document.getElementById('image-preview');
             const file = fileInput.files[0];
 
-            document.getElementById("predict-button").disabled = true; 
+            document.getElementById("predict-button").disabled = true;  
             document.getElementById("save-button").disabled = true;
             document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
 
@@ -226,7 +226,7 @@
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                     preview.style.display = 'block';
-                    document.getElementById("predict-button").disabled = false; 
+                    document.getElementById("predict-button").disabled = false;  
                     document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
                     document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
                 }
@@ -272,7 +272,7 @@
                 
                 // 目前使用隨機數作為成功範例
                 if (true) { // 永遠為真，確保每次都能產生隨機數
-                    systolic = Math.floor(Math.random() * (160 - 90 + 1)) + 90; 
+                    systolic = Math.floor(Math.random() * (160 - 90 + 1)) + 90;  
                     diastolic = Math.floor(Math.random() * (100 - 60 + 1)) + 60;
                     isSuccessful = true;
                 } 
@@ -303,12 +303,17 @@
 
         // 資料寫入 Google Sheet 函式
         function saveToSheet() {
-            const systolic = document.getElementById("systolic-result").innerText;
-            const diastolic = document.getElementById("diastolic-result").innerText;
+            // 讀取結果，並去除前後空格
+            const systolicRaw = document.getElementById("systolic-result").innerText.trim();
+            const diastolicRaw = document.getElementById("diastolic-result").innerText.trim();
 
-            // 再次檢查數值是否有效
-            if (systolic === DEFAULT_VALUE || diastolic === DEFAULT_VALUE || isNaN(systolic) || isNaN(diastolic)) {
-                alert("辨識數值無效，無法儲存。");
+            // 🚨 關鍵修正：將字串強制轉換為數字 🚨
+            const systolic = Number(systolicRaw); 
+            const diastolic = Number(diastolicRaw); 
+
+            // 再次檢查數值是否有效 (使用轉換後的數字進行檢查)
+            if (systolicRaw === DEFAULT_VALUE || diastolicRaw === DEFAULT_VALUE || isNaN(systolic) || isNaN(diastolic)) {
+                alert("辨識數值無效或格式錯誤，無法儲存。");
                 return;
             }
 
@@ -320,7 +325,8 @@
             
             const data = {
                 'timestamp': new Date().toLocaleString(),
-                'systolic': systolic,
+                // 傳送乾淨的數字 (Apps Script 期望的格式)
+                'systolic': systolic, 
                 'diastolic': diastolic
             };
 
@@ -341,7 +347,7 @@
                     alert("血壓數據已成功記錄到 Google Sheet！");
                     document.getElementById("save-button").innerText = "💾 記錄完成";
                     document.getElementById("save-button").disabled = true;
-                    document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
+                    // document.getElementById("predict-button").innerText = "🧠 開始辨識數值"; // 保持原狀或根據您的流程重置
                 }, 500); // 延遲 0.5 秒
 
             })
