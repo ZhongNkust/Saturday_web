@@ -223,9 +223,9 @@ const STANDARD_HEIGHT = 600;
 // 針對圖片 IMG_5554.jpg (讀數 110/59) 進行優化
 const CROP_AREAS = [
     // 收縮壓 (Systolic) - 左上角 (數字 110)
-    { id: "SYS_1", type: "S", x: 20, y: 104, w: 108, h: 160 },   // 第一位 (1)
-    { id: "SYS_2", type: "S", x: 130, y: 104, w: 108, h: 160 },  // 第二位 (1)
-    { id: "SYS_3", type: "S", x: 242, y: 104, w: 108, h: 160 },  // 第三位 (0)
+    { id: "SYS_1", type: "S", x: 15, y: 104, w: 108, h: 160 },   // 第一位 (1)
+    { id: "SYS_2", type: "S", x: 125, y: 104, w: 108, h: 160 },  // 第二位 (1)
+    { id: "SYS_3", type: "S", x: 237, y: 104, w: 108, h: 160 },  // 第三位 (0)
 
     // 舒張壓 (Diastolic) - 右上角 (數字 59)
     { id: "DIA_1", type: "D", x: 540, y: 104, w: 108, h: 160 },  // 第一位 (5)
@@ -369,7 +369,7 @@ const CROP_AREAS = [
                     // 🚨 5. 組裝數值 - 關鍵修正：從類別名稱中提取純數字 🚨
                     const actualDigit = predictedClassName.replace('Number_', '').trim();
                     
-                    if (actualDigit !== undefined && highestPrediction.probability > 0.53) { // 設置信心度閾值為 0.65
+                    if (actualDigit !== undefined && highestPrediction.probability > 0.5) { // 設置信心度閾值為 0.65
                         if (area.type === "S") {
                             systolicStr += actualDigit;
                         } else if (area.type === "D") {
