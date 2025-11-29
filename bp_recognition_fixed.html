@@ -14,7 +14,7 @@
             text-align: center;
         }
         .container {
-            max-width: 800px;  
+            max-width: 800px; 
             margin: auto;
             background: #f0ffef; /* 調整為更淺的背景色 */
             padding: 30px;
@@ -42,9 +42,9 @@
             cursor: pointer;
             font-size: 1em;
             font-weight: bold;
-            display: block;  
+            display: block; 
             width: 150px;
-            margin: 0 0 20px 0;  
+            margin: 0 0 20px 0; 
             text-align: center;
             transition: background-color 0.3s;
         }
@@ -120,28 +120,6 @@
             cursor: not-allowed;
         }
         
-        /* 裁剪預覽區樣式 */
-        #crop-preview-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 10px;
-            border: 1px dashed #007bff;
-            padding: 10px;
-            background-color: #eaf8ff;
-            border-radius: 5px;
-        }
-        .digit-preview {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 5px;
-        }
-        .digit-preview canvas {
-            border: 2px solid #555;
-            border-radius: 3px;
-        }
-
 
         /* 響應式設計 */
         @media (max-width: 680px) {
@@ -185,11 +163,6 @@
             <p style="font-size: 0.9em; color: #888;">請先上傳圖片，再點擊開始辨識。</p>
             <hr>
 
-            <h3>🔍 裁剪預覽 (除錯用)</h3>
-            <div id="crop-preview-container">
-                <p style="color: #888; font-style: italic;">點擊「開始辨識」後，這裡將顯示裁剪後的數字。</p>
-            </div>
-            <hr>
             <h2>辨識結果與記錄</h2>
             
             <div class="result-box">
@@ -216,7 +189,7 @@
 const URL = "https://teachablemachine.withgoogle.com/models/UGwLtPbgm/"; 
 
 // 【新增】標準化處理尺寸 (基於您的圖片比例，寬度設為 800)
-const STANDARD_WIDTH = 800;  
+const STANDARD_WIDTH = 800; 
 const STANDARD_HEIGHT = 600; 
 
 // 🚨 2. 裁剪區域定義 (已更新為基於 IMG_5554.jpg 的微調座標) 🚨
@@ -238,11 +211,11 @@ const CROP_AREAS = [
 // ----------------------------------------------------------------------
 
         let model, maxPredictions;
-        const DEFAULT_VALUE = "---";  
+        const DEFAULT_VALUE = "---"; 
         
         // 建立一個隱藏的 Canvas 供裁剪和預測使用 (尺寸固定為模型輸入 224x224)
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 224;  
+        tempCanvas.width = 224; 
         tempCanvas.height = 224;
         const tempCtx = tempCanvas.getContext('2d');
         
@@ -262,29 +235,29 @@ const CROP_AREAS = [
                 
             } catch (error) {
                 console.error("模型載入失敗，請檢查 URL 及檔案路徑: ", error);
-                document.getElementById('systolic-result').innerText = "載入失敗";  
+                document.getElementById('systolic-result').innerText = "載入失敗"; 
                 document.getElementById('diastolic-result').innerText = "載入失敗";
                 alert("AI模型載入失敗，請檢查 Teachable Machine URL 和檔案路徑是否正確。");
             }
         }
 
-        // 圖片上傳預覽 (邏輯不變)
+        // 圖片上傳預覽 (邏輯已移除清空裁剪預覽區的程式碼)
         function previewImage() {
             const fileInput = document.getElementById('fileInput');
             const preview = document.getElementById('image-preview');
             const file = fileInput.files[0];
 
-            document.getElementById("predict-button").disabled = true;  
+            document.getElementById("predict-button").disabled = true; 
             document.getElementById("save-button").disabled = true;
             document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
-            document.getElementById("crop-preview-container").innerHTML = '<p style="color: #888; font-style: italic;">點擊「開始辨識」後，這裡將顯示裁剪後的數字。</p>'; // 清空裁剪預覽區
+            
 
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                     preview.style.display = 'block';
-                    document.getElementById("predict-button").disabled = false;  
+                    document.getElementById("predict-button").disabled = false; 
                     document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
                     document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
                 }
@@ -292,7 +265,7 @@ const CROP_AREAS = [
             }
         }
 
-        // 核心辨識函式 (已整合固定尺寸縮放和新座標)
+        // 核心辨識函式 (已移除裁剪預覽的邏輯)
         async function predict() {
             document.getElementById("predict-button").innerText = "辨識中...";
             document.getElementById("predict-button").disabled = true;
@@ -332,9 +305,6 @@ const CROP_AREAS = [
             let diastolicStr = "";
             let isSuccessful = true;
             
-            // 清空裁剪預覽區
-            document.getElementById("crop-preview-container").innerHTML = '';
-            
             try {
                 for (const area of CROP_AREAS) {
                     // 2. 裁剪單個數字的區域 (使用標準化後的 Canvas 進行裁剪)
@@ -347,14 +317,6 @@ const CROP_AREAS = [
                     digitCanvas.height = area.h;
                     // 將裁剪數據放進 digitCanvas
                     digitCanvas.getContext('2d').putImageData(croppedImageData, 0, 0);
-
-                    // 🚨 視覺化除錯：將裁剪後的 Canvas 顯示在網頁上 🚨
-                    const previewDiv = document.createElement('div');
-                    previewDiv.className = 'digit-preview';
-                    previewDiv.innerHTML = `<p style="font-size: 0.8em; margin: 2px 0;">${area.id}</p>`;
-                    previewDiv.appendChild(digitCanvas);
-                    document.getElementById("crop-preview-container").appendChild(previewDiv);
-
 
                     // 4. 執行預測：模型會自動將 digitCanvas (例如 108x160) 縮放為 224x224 進行預測
                     const prediction = await model.predict(digitCanvas);
@@ -381,7 +343,7 @@ const CROP_AREAS = [
                     } else {
                         console.warn(`辨識項目 ${area.id} 信心度不足 (${(highestPrediction.probability * 100).toFixed(1)}%)，設為失敗。`);
                         isSuccessful = false;
-                        break;  
+                        break; 
                     }
                 }
 
@@ -416,8 +378,8 @@ const CROP_AREAS = [
             const systolicRaw = document.getElementById("systolic-result").innerText.trim();
             const diastolicRaw = document.getElementById("diastolic-result").innerText.trim();
 
-            const systolic = Number(systolicRaw);  
-            const diastolic = Number(diastolicRaw);  
+            const systolic = Number(systolicRaw); 
+            const diastolic = Number(diastolicRaw); 
 
             if (systolicRaw === DEFAULT_VALUE || diastolicRaw === DEFAULT_VALUE || isNaN(systolic) || isNaN(diastolic)) {
                 alert("辨識數值無效或格式錯誤，無法儲存。");
@@ -432,13 +394,13 @@ const CROP_AREAS = [
             
             const data = {
                 'timestamp': new Date().toLocaleString(),
-                'systolic': systolic,  
+                'systolic': systolic, 
                 'diastolic': diastolic
             };
 
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',  
+                mode: 'no-cors', 
                 headers: {
                     'Content-Type': 'application/json',
                 },
