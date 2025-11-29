@@ -1,434 +1,467 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>血壓計影像辨識與記錄</title>
-    <style>
-        /* 繼承自您的個人頁面樣式 */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f8f4e6; /* 淡米白色背景 */
-            color: #333;
-            text-align: center;
-        }
-        .container {
-            max-width: 800px;  
-            margin: auto;
-            background: #f0ffef; /* 調整為更淺的背景色 */
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #5a5a5a;
-        }
-        h2, h3 { /* 增加 h3 樣式 */
-            color: #007bff; /* 藍色主色 */
-            margin-top: 25px;
-        }
-        p {
-            line-height: 1.6;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>血壓計影像辨識與記錄</title>
+    <style>
+        /* 繼承自您的個人頁面樣式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f8f4e6; /* 淡米白色背景 */
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;  
+            margin: auto;
+            background: #f0ffef; /* 調整為更淺的背景色 */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #5a5a5a;
+        }
+        h2, h3 { /* 增加 h3 樣式 */
+            color: #007bff; /* 藍色主色 */
+            margin-top: 25px;
+        }
+        p {
+            line-height: 1.6;
+        }
 
-        /* === 返回按鈕樣式 (繼承自原頁面) === */
-        .back-button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            display: block;  
-            width: 150px;
-            margin: 0 0 20px 0;  
-            text-align: center;
-            transition: background-color 0.3s;
-        }
-        .back-button:hover {
-            background-color: #0056b3;
-        }
-        
-        /* === 專屬樣式 Start === */
-        
-        /* 圖片上傳區域 */
-        #image-upload-area {
-            border: 3px dashed #007bff; /* 使用藍色虛線框 */
-            background-color: #e6f7ff; /* 極淺藍色背景 */
-            padding: 25px;
-            margin: 20px auto;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #image-upload-area:hover {
-            background-color: #cceeff;
-        }
+        /* === 返回按鈕樣式 (繼承自原頁面) === */
+        .back-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            display: block;  
+            width: 150px;
+            margin: 0 0 20px 0;  
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        
+        /* === 專屬樣式 Start === */
+        
+        /* 圖片上傳區域 */
+        #image-upload-area {
+            border: 3px dashed #007bff; /* 使用藍色虛線框 */
+            background-color: #e6f7ff; /* 極淺藍色背景 */
+            padding: 25px;
+            margin: 20px auto;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #image-upload-area:hover {
+            background-color: #cceeff;
+        }
 
-        /* 隱藏原生檔案輸入框 */
-        #fileInput {
-            display: none;
-        }
+        /* 隱藏原生檔案輸入框 */
+        #fileInput {
+            display: none;
+        }
 
-        /* 圖片預覽框 (沿用 cam-frame 的視覺風格) */
-        #image-preview {
-            max-width: 100%;
-            max-height: 350px;
-            margin: 20px auto;
-            border: 4px solid #333; /* 深色邊框 */
-            border-radius: 4px;
-            display: none; /* 預設隱藏 */
-            object-fit: contain;
-            background-color: #000;
-        }
-        
-        /* 結果展示區 */
-        .result-box {
-            background: #fff;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
-        }
-        .result-box strong {
-            font-size: 1.5em;
-            color: #ff6600; /* 使用橙色突出結果 */
-        }
+        /* 圖片預覽框 (沿用 cam-frame 的視覺風格) */
+        #image-preview {
+            max-width: 100%;
+            max-height: 350px;
+            margin: 20px auto;
+            border: 4px solid #333; /* 深色邊框 */
+            border-radius: 4px;
+            display: none; /* 預設隱藏 */
+            object-fit: contain;
+            background-color: #000;
+        }
+        
+        /* 結果展示區 */
+        .result-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .result-box strong {
+            font-size: 1.5em;
+            color: #ff6600; /* 使用橙色突出結果 */
+        }
 
-        /* 功能按鈕 (辨識/儲存) */
-        .action-button {
-            background-color: #ff6600; /* 橙色按鈕，用於主要動作 */
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            margin: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
+        /* 功能按鈕 (辨識/儲存) */
+        .action-button {
+            background-color: #ff6600; /* 橙色按鈕，用於主要動作 */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            margin: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
 
-        .action-button:hover:not(:disabled) {
-            background-color: #cc5200;
-        }
+        .action-button:hover:not(:disabled) {
+            background-color: #cc5200;
+        }
 
-        .action-button:disabled {
-            background-color: #5a5a5a; /* 關閉狀態的灰色 */
-            cursor: not-allowed;
-        }
-        
-        /* 響應式設計 */
-        @media (max-width: 680px) {
-            .container {
-                margin: 0;
-            }
-            #image-preview {
-                width: 100%;
-            }
-        }
-        /* === 專屬樣式 End === */
+        .action-button:disabled {
+            background-color: #5a5a5a; /* 關閉狀態的灰色 */
+            cursor: not-allowed;
+        }
+        
+        /* 裁剪預覽區樣式 */
+        #crop-preview-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            border: 1px dashed #007bff;
+            padding: 10px;
+            background-color: #eaf8ff;
+            border-radius: 5px;
+        }
+        .digit-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 5px;
+        }
+        .digit-preview canvas {
+            border: 2px solid #555;
+            border-radius: 3px;
+        }
 
-    </style>
+
+        /* 響應式設計 */
+        @media (max-width: 680px) {
+            .container {
+                margin: 0;
+            }
+            #image-preview {
+                width: 100%;
+            }
+        }
+        /* === 專屬樣式 End === */
+
+    </style>
 </head>
 <body>
-    <div class="container">
-        
-        <button class="back-button" onclick="history.back()">
-            ← 返回上一頁
-        </button>
-        
-        <h1>血壓計影像辨識與數據記錄</h1>
-        
-        <p>請上傳血壓計顯示屏的圖片。</p>
-        <hr>
+    <div class="container">
+        
+        <button class="back-button" onclick="history.back()">
+            ← 返回上一頁
+        </button>
+        
+        <h1>血壓計影像辨識與數據記錄</h1>
+        
+        <p>請上傳血壓計顯示屏的圖片。</p>
+        <hr>
 
-        <div class="recognition-section">
-            <h2>上傳圖片</h2>
-            
-            <input type="file" id="fileInput" accept="image/*" onchange="previewImage()">
-            
-            <div id="image-upload-area" onclick="document.getElementById('fileInput').click()">
-                <p>點擊上傳血壓計圖片</p>
-            </div>
-            
-            <img id="image-preview" src="#" alt="上傳的圖片預覽">
-            
-            <button class="action-button" id="predict-button" onclick="predict()" disabled>
-                🧠 開始辨識數值
-            </button>
-            <p style="font-size: 0.9em; color: #888;">請先上傳圖片，再點擊開始辨識。</p>
-            <hr>
+        <div class="recognition-section">
+            <h2>上傳圖片</h2>
+            
+            <input type="file" id="fileInput" accept="image/*" onchange="previewImage()">
+            
+            <div id="image-upload-area" onclick="document.getElementById('fileInput').click()">
+                <p>點擊上傳血壓計圖片</p>
+            </div>
+            
+            <img id="image-preview" src="#" alt="上傳的圖片預覽">
+            
+            <button class="action-button" id="predict-button" onclick="predict()" disabled>
+                🧠 開始辨識數值
+            </button>
+            <p style="font-size: 0.9em; color: #888;">請先上傳圖片，再點擊開始辨識。</p>
+            <hr>
 
-                        
-            <h2>辨識結果與記錄</h2>
-            
-            <div class="result-box">
-                <p>收縮壓 (Systolic): <strong id="systolic-result">---</strong> mmHg</p>
-                <p>舒張壓 (Diastolic): <strong id="diastolic-result">---</strong> mmHg</p>
-            </div>
-            
-            <button class="action-button" id="save-button" onclick="saveToSheet()" disabled>
-                💾 記錄到 Google Sheet
-            </button>
+            <h3>🔍 裁剪預覽 (除錯用)</h3>
+            <div id="crop-preview-container">
+                <p style="color: #888; font-style: italic;">點擊「開始辨識」後，這裡將顯示裁剪後的數字。</p>
+            </div>
+            <hr>
+            <h2>辨識結果與記錄</h2>
+            
+            <div class="result-box">
+                <p>收縮壓 (Systolic): <strong id="systolic-result">---</strong> mmHg</p>
+                <p>舒張壓 (Diastolic): <strong id="diastolic-result">---</strong> mmHg</p>
+            </div>
+            
+            <button class="action-button" id="save-button" onclick="saveToSheet()" disabled>
+                💾 記錄到 Google Sheet
+            </button>
 
-        </div>
+        </div>
 
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-    
-    <script>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    
+    <script>
 // ----------------------------------------------------------------------
 // 【核心設定區】
 // ----------------------------------------------------------------------
 // 🚨 1. Teachable Machine 模型的 URL (已更新為您的網址) 🚨
-const URL = "https://teachablemachine.withgoogle.com/models/UGwLtPbgm/"; 
+const URL = "https://teachablemachine.withgoogle.com/models/UGwLtPbgm/"; 
 
 // 【新增】標準化處理尺寸 (基於您的圖片比例，寬度設為 800)
-const STANDARD_WIDTH = 800;  
-const STANDARD_HEIGHT = 600; 
+const STANDARD_WIDTH = 800;  
+const STANDARD_HEIGHT = 600; 
 
-// 🚨 2. 裁剪區域定義 (維持使用者提供的座標) 🚨
+// 🚨 2. 裁剪區域定義 (已更新為基於 IMG_5554.jpg 的微調座標) 🚨
 // 針對圖片 IMG_5554.jpg (讀數 110/59) 進行優化
 const CROP_AREAS = [
-    // 收縮壓 (Systolic) - 左上角 (數字 110)
-    { id: "SYS_1", type: "S", x: 15, y: 104, w: 108, h: 160 },   // 第一位 (1)
-    { id: "SYS_2", type: "S", x: 125, y: 104, w: 108, h: 160 },  // 第二位 (1)
-    { id: "SYS_3", type: "S", x: 237, y: 104, w: 108, h: 160 },  // 第三位 (0)
+    // 收縮壓 (Systolic) - 左上角 (數字 110)
+    { id: "SYS_1", type: "S", x: 15, y: 104, w: 108, h: 160 },   // 第一位 (1)
+    { id: "SYS_2", type: "S", x: 125, y: 104, w: 108, h: 160 },  // 第二位 (1)
+    { id: "SYS_3", type: "S", x: 237, y: 104, w: 108, h: 160 },  // 第三位 (0)
 
-    // 舒張壓 (Diastolic) - 右上角 (數字 59)
-    { id: "DIA_1", type: "D", x: 540, y: 104, w: 108, h: 160 },  // 第一位 (5)
-    { id: "DIA_2", type: "D", x: 650, y: 104, w: 108, h: 160 },  // 第二位 (9)
+    // 舒張壓 (Diastolic) - 右上角 (數字 59)
+    { id: "DIA_1", type: "D", x: 540, y: 104, w: 108, h: 160 },  // 第一位 (5)
+    { id: "DIA_2", type: "D", x: 650, y: 104, w: 108, h: 160 },  // 第二位 (9)
 
-    // 脈搏 (Pulse) - 右下角 (數字 74)
-    // { id: "PUL_1", type: "P", x: 428, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第一位 (7)
-    // { id: "PUL_2", type: "P", x: 540, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第二位 (4)
+    // 脈搏 (Pulse) - 右下角 (數字 74)
+    // { id: "PUL_1", type: "P", x: 428, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第一位 (7)
+    // { id: "PUL_2", type: "P", x: 540, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第二位 (4)
 ];
 // ----------------------------------------------------------------------
 
-        let model, maxPredictions;
-        const DEFAULT_VALUE = "---";  
-        
-        // 建立一個隱藏的 Canvas 供裁剪和預測使用 (尺寸固定為模型輸入 224x224)
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 224;  
-        tempCanvas.height = 224;
-        const tempCtx = tempCanvas.getContext('2d');
-        
+        let model, maxPredictions;
+        const DEFAULT_VALUE = "---";  
+        
+        // 建立一個隱藏的 Canvas 供裁剪和預測使用 (尺寸固定為模型輸入 224x224)
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 224;  
+        tempCanvas.height = 224;
+        const tempCtx = tempCanvas.getContext('2d');
+        
 
-        // 頁面載入時初始化模型
-        async function init() {
-            try {
-                const modelURL = URL + "model.json";
-                const metadataURL = URL + "metadata.json";
+        // 頁面載入時初始化模型
+        async function init() {
+            try {
+                const modelURL = URL + "model.json";
+                const metadataURL = URL + "metadata.json";
 
-                model = await tmImage.load(modelURL, metadataURL);
-                maxPredictions = model.getTotalClasses();
-                
-                document.getElementById('systolic-result').innerText = DEFAULT_VALUE;
-                document.getElementById('diastolic-result').innerText = DEFAULT_VALUE;
-                console.log("Teachable Machine 模型載入完成。");
-                
-            } catch (error) {
-                console.error("模型載入失敗，請檢查 URL 及檔案路徑: ", error);
-                document.getElementById('systolic-result').innerText = "載入失敗";  
-                document.getElementById('diastolic-result').innerText = "載入失敗";
-                alert("AI模型載入失敗，請檢查 Teachable Machine URL 和檔案路徑是否正確。");
-            }
-        }
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+                
+                document.getElementById('systolic-result').innerText = DEFAULT_VALUE;
+                document.getElementById('diastolic-result').innerText = DEFAULT_VALUE;
+                console.log("Teachable Machine 模型載入完成。");
+                
+            } catch (error) {
+                console.error("模型載入失敗，請檢查 URL 及檔案路徑: ", error);
+                document.getElementById('systolic-result').innerText = "載入失敗";  
+                document.getElementById('diastolic-result').innerText = "載入失敗";
+                alert("AI模型載入失敗，請檢查 Teachable Machine URL 和檔案路徑是否正確。");
+            }
+        }
 
-        // 圖片上傳預覽 (刪除了清空裁剪區的程式碼)
-        function previewImage() {
-            const fileInput = document.getElementById('fileInput');
-            const preview = document.getElementById('image-preview');
-            const file = fileInput.files[0];
+        // 圖片上傳預覽 (邏輯不變)
+        function previewImage() {
+            const fileInput = document.getElementById('fileInput');
+            const preview = document.getElementById('image-preview');
+            const file = fileInput.files[0];
 
-            document.getElementById("predict-button").disabled = true;  
-            document.getElementById("save-button").disabled = true;
-            document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
-            // 🎯 刪除：document.getElementById("crop-preview-container").innerHTML = '...'; 
+            document.getElementById("predict-button").disabled = true;  
+            document.getElementById("save-button").disabled = true;
+            document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
+            document.getElementById("crop-preview-container").innerHTML = '<p style="color: #888; font-style: italic;">點擊「開始辨識」後，這裡將顯示裁剪後的數字。</p>'; // 清空裁剪預覽區
 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    document.getElementById("predict-button").disabled = false;  
-                    document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
-                    document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
-                }
-                reader.readAsDataURL(file);
-            }
-        }
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById("predict-button").disabled = false;  
+                    document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
+                    document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
 
-        // 核心辨識函式 (已刪除建立及顯示裁剪 Canvas 的程式碼)
-        async function predict() {
-            document.getElementById("predict-button").innerText = "辨識中...";
-            document.getElementById("predict-button").disabled = true;
-            document.getElementById("systolic-result").innerText = "分析中...";
-            document.getElementById("diastolic-result").innerText = "分析中...";
-            document.getElementById("save-button").disabled = true;
+        // 核心辨識函式 (已整合固定尺寸縮放和新座標)
+        async function predict() {
+            document.getElementById("predict-button").innerText = "辨識中...";
+            document.getElementById("predict-button").disabled = true;
+            document.getElementById("systolic-result").innerText = "分析中...";
+            document.getElementById("diastolic-result").innerText = "分析中...";
+            document.getElementById("save-button").disabled = true;
 
-            if (!model) {
-                alert("模型尚未載入成功，無法辨識。");
-                document.getElementById("predict-button").innerText = "🧠 模型未載入";
-                document.getElementById("predict-button").disabled = false;
-                document.getElementById("systolic-result").innerText = "載入失敗";
-                document.getElementById("diastolic-result").innerText = "載入失敗";
-                return;
-            }
+            if (!model) {
+                alert("模型尚未載入成功，無法辨識。");
+                document.getElementById("predict-button").innerText = "🧠 模型未載入";
+                document.getElementById("predict-button").disabled = false;
+                document.getElementById("systolic-result").innerText = "載入失敗";
+                document.getElementById("diastolic-result").innerText = "載入失敗";
+                return;
+            }
 
-            const image = document.getElementById('image-preview');
-            if (!image.src || image.src.includes('#')) {
-                alert("請先上傳圖片！");
-                document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
-                document.getElementById("predict-button").disabled = false;
-                document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
-                document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
-                return;
-            }
+            const image = document.getElementById('image-preview');
+            if (!image.src || image.src.includes('#')) {
+                alert("請先上傳圖片！");
+                document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
+                document.getElementById("predict-button").disabled = false;
+                document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
+                document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
+                return;
+            }
 
-            // 1. 建立一個 Canvas，並強制尺寸為 STANDARD_WIDTH x STANDARD_HEIGHT
-            const originalCanvas = document.createElement('canvas');
-            originalCanvas.width = STANDARD_WIDTH;    // 800
-            originalCanvas.height = STANDARD_HEIGHT; // 600
-            const originalCtx = originalCanvas.getContext('2d');
+            // 1. 建立一個 Canvas，並強制尺寸為 STANDARD_WIDTH x STANDARD_HEIGHT
+            const originalCanvas = document.createElement('canvas');
+            originalCanvas.width = STANDARD_WIDTH;    // 800
+            originalCanvas.height = STANDARD_HEIGHT; // 600
+            const originalCtx = originalCanvas.getContext('2d');
 
-            // 繪製圖片時，將其縮放到標準尺寸。這確保了裁剪座標的準確性。
-            originalCtx.drawImage(image, 0, 0, STANDARD_WIDTH, STANDARD_HEIGHT);
-            
-            let systolicStr = "";
-            let diastolicStr = "";
-            let isSuccessful = true;
-            
-            // 🎯 已刪除：清空裁剪預覽區塊的程式碼
-            
-            try {
-                for (const area of CROP_AREAS) {
-                    // 2. 裁剪單個數字的區域 (使用標準化後的 Canvas 進行裁剪)
-                    // 從標準化後的圖片中抓取像素數據
-                    const croppedImageData = originalCtx.getImageData(area.x, area.y, area.w, area.h);
-                    
-                    // 臨時 Canvas 用於保存裁剪後的單個數字
-                    const digitCanvas = document.createElement('canvas');
-                    digitCanvas.width = area.w;
-                    digitCanvas.height = area.h;
-                    // 將裁剪數據放進 digitCanvas
-                    digitCanvas.getContext('2d').putImageData(croppedImageData, 0, 0);
+            // 繪製圖片時，將其縮放到標準尺寸。這確保了裁剪座標的準確性。
+            originalCtx.drawImage(image, 0, 0, STANDARD_WIDTH, STANDARD_HEIGHT);
+            
+            let systolicStr = "";
+            let diastolicStr = "";
+            let isSuccessful = true;
+            
+            // 清空裁剪預覽區
+            document.getElementById("crop-preview-container").innerHTML = '';
+            
+            try {
+                for (const area of CROP_AREAS) {
+                    // 2. 裁剪單個數字的區域 (使用標準化後的 Canvas 進行裁剪)
+                    // 從標準化後的圖片中抓取像素數據
+                    const croppedImageData = originalCtx.getImageData(area.x, area.y, area.w, area.h);
+                    
+                    // 臨時 Canvas 用於保存裁剪後的單個數字
+                    const digitCanvas = document.createElement('canvas');
+                    digitCanvas.width = area.w;
+                    digitCanvas.height = area.h;
+                    // 將裁剪數據放進 digitCanvas
+                    digitCanvas.getContext('2d').putImageData(croppedImageData, 0, 0);
 
-                    // 🎯 已刪除：視覺化除錯 (將裁剪後的 Canvas 顯示在網頁上) 的程式碼
+                    // 🚨 視覺化除錯：將裁剪後的 Canvas 顯示在網頁上 🚨
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'digit-preview';
+                    previewDiv.innerHTML = `<p style="font-size: 0.8em; margin: 2px 0;">${area.id}</p>`;
+                    previewDiv.appendChild(digitCanvas);
+                    document.getElementById("crop-preview-container").appendChild(previewDiv);
 
 
-                    // 4. 執行預測：模型會自動將 digitCanvas (例如 108x160) 縮放為 224x224 進行預測
-                    const prediction = await model.predict(digitCanvas);
+                    // 4. 執行預測：模型會自動將 digitCanvas (例如 108x160) 縮放為 224x224 進行預測
+                    const prediction = await model.predict(digitCanvas);
 
-                    // 找出信心度最高的類別
-                    const highestPrediction = prediction.reduce((prev, current) =>  
-                        (prev.probability > current.probability) ? prev : current
-                    );
-                    
-                    const predictedClassName = highestPrediction.className;  
-                    
-                    // 5. 組裝數值 - 從類別名稱中提取純數字
-                    const actualDigit = predictedClassName.replace('Number_', '').trim();
-                    
-                    if (actualDigit !== undefined && highestPrediction.probability > 0.7) { // 設置信心度閾值為 0.7
-                        if (area.type === "S") {
-                            systolicStr += actualDigit;
-                        } else if (area.type === "D") {
-                            diastolicStr += actualDigit;
-                        }
-                        // 額外輸出信心度到 Console
-                        console.log(`[${area.id}] 預測: ${actualDigit} (信賴度: ${(highestPrediction.probability * 100).toFixed(1)}%)`);
+                    // 找出信心度最高的類別
+                    const highestPrediction = prediction.reduce((prev, current) =>  
+                        (prev.probability > current.probability) ? prev : current
+                    );
+                    
+                    const predictedClassName = highestPrediction.className;  
+                    
+                    // 🚨 5. 組裝數值 - 關鍵修正：從類別名稱中提取純數字 🚨
+                    const actualDigit = predictedClassName.replace('Number_', '').trim();
+                    
+                    if (actualDigit !== undefined && highestPrediction.probability > 0.7) { // 設置信心度閾值為 0.65
+                        if (area.type === "S") {
+                            systolicStr += actualDigit;
+                        } else if (area.type === "D") {
+                            diastolicStr += actualDigit;
+                        }
+                        // 額外輸出信心度到 Console
+                        console.log(`[${area.id}] 預測: ${actualDigit} (信賴度: ${(highestPrediction.probability * 100).toFixed(1)}%)`);
 
-                    } else {
-                        console.warn(`辨識項目 ${area.id} 信心度不足 (${(highestPrediction.probability * 100).toFixed(1)}%)，設為失敗。`);
-                        isSuccessful = false;
-                        break;  
-                    }
-                }
+                    } else {
+                        console.warn(`辨識項目 ${area.id} 信心度不足 (${(highestPrediction.probability * 100).toFixed(1)}%)，設為失敗。`);
+                        isSuccessful = false;
+                        break;  
+                    }
+                }
 
-            } catch (error) {
-                console.error("辨識過程發生錯誤:", error);
-                isSuccessful = false;
-            }
+            } catch (error) {
+                console.error("辨識過程發生錯誤:", error);
+                isSuccessful = false;
+            }
 
-            // 6. 顯示結果
-            const finalSystolic = isSuccessful && systolicStr.length > 0 ? systolicStr : DEFAULT_VALUE;
-            const finalDiastolic = isSuccessful && diastolicStr.length > 0 ? diastolicStr : DEFAULT_VALUE;
+            // 6. 顯示結果
+            const finalSystolic = isSuccessful && systolicStr.length > 0 ? systolicStr : DEFAULT_VALUE;
+            const finalDiastolic = isSuccessful && diastolicStr.length > 0 ? diastolicStr : DEFAULT_VALUE;
 
-            document.getElementById("systolic-result").innerText = finalSystolic;
-            document.getElementById("diastolic-result").innerText = finalDiastolic;
+            document.getElementById("systolic-result").innerText = finalSystolic;
+            document.getElementById("diastolic-result").innerText = finalDiastolic;
 
-            // 恢復按鈕
-            const successText = `✅ 辨識成功 (${finalSystolic}/${finalDiastolic})`;
-            const failureText = `❌ 辨識失敗，請重試`;
-            document.getElementById("predict-button").innerText = isSuccessful && finalSystolic !== DEFAULT_VALUE ? successText : failureText;
-            document.getElementById("predict-button").disabled = false;
-            
-            // 啟用/禁用儲存按鈕
-            if (finalSystolic !== DEFAULT_VALUE && finalDiastolic !== DEFAULT_VALUE) {
-                document.getElementById("save-button").disabled = false;
-            } else {
-                document.getElementById("save-button").disabled = true;
-            }
-        }
+            // 恢復按鈕
+            const successText = `✅ 辨識成功 (${finalSystolic}/${finalDiastolic})`;
+            const failureText = `❌ 辨識失敗，請重試`;
+            document.getElementById("predict-button").innerText = isSuccessful && finalSystolic !== DEFAULT_VALUE ? successText : failureText;
+            document.getElementById("predict-button").disabled = false;
+            
+            // 啟用/禁用儲存按鈕
+            if (finalSystolic !== DEFAULT_VALUE && finalDiastolic !== DEFAULT_VALUE) {
+                document.getElementById("save-button").disabled = false;
+            } else {
+                document.getElementById("save-button").disabled = true;
+            }
+        }
 
-        // 資料寫入 Google Sheet 函式 (邏輯不變)
-        function saveToSheet() {
-            const systolicRaw = document.getElementById("systolic-result").innerText.trim();
-            const diastolicRaw = document.getElementById("diastolic-result").innerText.trim();
+        // 資料寫入 Google Sheet 函式 (邏輯不變)
+        function saveToSheet() {
+            const systolicRaw = document.getElementById("systolic-result").innerText.trim();
+            const diastolicRaw = document.getElementById("diastolic-result").innerText.trim();
 
-            const systolic = Number(systolicRaw);  
-            const diastolic = Number(diastolicRaw);  
+            const systolic = Number(systolicRaw);  
+            const diastolic = Number(diastolicRaw);  
 
-            if (systolicRaw === DEFAULT_VALUE || diastolicRaw === DEFAULT_VALUE || isNaN(systolic) || isNaN(diastolic)) {
-                alert("辨識數值無效或格式錯誤，無法儲存。");
-                return;
-            }
+            if (systolicRaw === DEFAULT_VALUE || diastolicRaw === DEFAULT_VALUE || isNaN(systolic) || isNaN(diastolic)) {
+                alert("辨識數值無效或格式錯誤，無法儲存。");
+                return;
+            }
 
-            document.getElementById("save-button").innerText = "儲存中...";
-            document.getElementById("save-button").disabled = true;
-            
-            // 🚨 請替換為您 Google Apps Script 的 Web App URL 🚨
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; 
-            
-            const data = {
-                'timestamp': new Date().toLocaleString(),
-                'systolic': systolic,  
-                'diastolic': diastolic
-            };
+            document.getElementById("save-button").innerText = "儲存中...";
+            document.getElementById("save-button").disabled = true;
+            
+            // 🚨 請替換為您 Google Apps Script 的 Web App URL 🚨
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; 
+            
+            const data = {
+                'timestamp': new Date().toLocaleString(),
+                'systolic': systolic,  
+                'diastolic': diastolic
+            };
 
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',  
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(() => {
-                setTimeout(() => {
-                    alert("血壓數據已成功記錄到 Google Sheet！");
-                    document.getElementById("save-button").innerText = "💾 記錄完成";
-                    document.getElementById("save-button").disabled = true;
-                }, 500); 
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',  
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                setTimeout(() => {
+                    alert("血壓數據已成功記錄到 Google Sheet！");
+                    document.getElementById("save-button").innerText = "💾 記錄完成";
+                    document.getElementById("save-button").disabled = true;
+                }, 500); 
 
-            })
-            .catch(error => {
-                console.error('記錄失敗:', error);
-                alert("數據記錄失敗，請檢查網路連線或 Apps Script URL。");
-                document.getElementById("save-button").innerText = "💾 記錄失敗";
-                document.getElementById("save-button").disabled = false;
-            });
-        }
+            })
+            .catch(error => {
+                console.error('記錄失敗:', error);
+                alert("數據記錄失敗，請檢查網路連線或 Apps Script URL。");
+                document.getElementById("save-button").innerText = "💾 記錄失敗";
+                document.getElementById("save-button").disabled = false;
+            });
+        }
 
-        // 啟動模型載入
-        init();
-    </script>
+        // 啟動模型載入
+        init();
+    </script>
 </body>
 </html>
