@@ -327,7 +327,7 @@ const CROP_AREAS = [
                     const predictedDigit = highestPrediction.className; 
                     
                     // 5. 組裝數值
-                    if (predictedDigit !== undefined && highestPrediction.probability > 0.7) { // 設置信心度閾值
+                    if (predictedDigit !== undefined && highestPrediction.probability > 0.64) { // 設置信心度閾值
                         if (area.type === "S") {
                             systolicStr += predictedDigit;
                         } else if (area.type === "D") {
