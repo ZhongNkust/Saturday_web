@@ -181,34 +181,33 @@
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     
     <script>
-        // ----------------------------------------------------------------------
-        // 【核心設定區】
-        // ----------------------------------------------------------------------
-        // 🚨 1. Teachable Machine 模型的 URL (已更新為您的網址) 🚨
-        const URL = "https://teachablemachine.withgoogle.com/models/UGwLtPbgm/"; 
+// ----------------------------------------------------------------------
+// 【核心設定區】
+// ----------------------------------------------------------------------
+// 🚨 1. Teachable Machine 模型的 URL (已更新為您的網址) 🚨
+const URL = "https://teachablemachine.withgoogle.com/models/UGwLtPbgm/"; 
 
-        // 【新增】標準化處理尺寸 (基於您的圖片比例，寬度設為 800)
-        const STANDARD_WIDTH = 800;  
-        const STANDARD_HEIGHT = 600; 
+// 【新增】標準化處理尺寸 (基於您的圖片比例，寬度設為 800)
+const STANDARD_WIDTH = 800;  
+const STANDARD_HEIGHT = 600; 
 
-        // 🚨 2. 裁剪區域定義 (已更新為基於 800x600 尺寸的精準座標) 🚨
-        // *這些座標是為了在圖片縮放為 800x600 後，能準確捕捉數字區塊*
-        const CROP_AREAS = [
-            // 收縮壓 (Systolic) - 左上角 (數字 108)
-            { id: "SYS_1", type: "S", x: 40, y: 104, w: 108, h: 160 },   // 第一位 (1)
-            { id: "SYS_2", type: "S", x: 152, y: 104, w: 108, h: 160 },  // 第二位 (0)
-            { id: "SYS_3", type: "S", x: 264, y: 104, w: 108, h: 160 },  // 第三位 (8)
+// 🚨 2. 裁剪區域定義 (已更新為基於 IMG_5554.jpg 的微調座標) 🚨
+// 針對圖片 IMG_5554.jpg (讀數 110/59) 進行優化
+const CROP_AREAS = [
+    // 收縮壓 (Systolic) - 左上角 (數字 110)
+    { id: "SYS_1", type: "S", x: 44, y: 104, w: 108, h: 160 },   // 第一位 (1)
+    { id: "SYS_2", type: "S", x: 156, y: 104, w: 108, h: 160 },  // 第二位 (1)
+    { id: "SYS_3", type: "S", x: 268, y: 104, w: 108, h: 160 },  // 第三位 (0)
 
-            // 舒張壓 (Diastolic) - 右上角 (數字 71)
-            { id: "DIA_1", type: "D", x: 424, y: 104, w: 108, h: 160 },  // 第一位 (7)
-            { id: "DIA_2", type: "D", x: 536, y: 104, w: 108, h: 160 },  // 第二位 (1)
+    // 舒張壓 (Diastolic) - 右上角 (數字 59)
+    { id: "DIA_1", type: "D", x: 428, y: 104, w: 108, h: 160 },  // 第一位 (5)
+    { id: "DIA_2", type: "D", x: 540, y: 104, w: 108, h: 160 },  // 第二位 (9)
 
-            // 如果您需要脈搏 (Pulse) 79 的座標，可以自行添加：
-            // { id: "PUL_1", type: "P", x: 424, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第一位 (7)
-            // { id: "PUL_2", type: "P", x: 536, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第二位 (9)
-        ];
-        // ----------------------------------------------------------------------
-
+    // 脈搏 (Pulse) - 右下角 (數字 74)
+    // { id: "PUL_1", type: "P", x: 428, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第一位 (7)
+    // { id: "PUL_2", type: "P", x: 540, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第二位 (4)
+];
+// ----------------------------------------------------------------------
 
         let model, maxPredictions;
         const DEFAULT_VALUE = "---"; 
