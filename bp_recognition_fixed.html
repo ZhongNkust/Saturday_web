@@ -181,10 +181,38 @@
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     
     <script>
-        // Teachable Machine 模型的 URL (🚨 請替換為您自己的模型網址 🚨)
-        const URL = "YOUR_TEACHABLE_MACHINE_MODEL_URL/"; 
+        // ----------------------------------------------------------------------
+        // 【核心設定區】請務必替換
+        // ----------------------------------------------------------------------
+        // 🚨 1. Teachable Machine 模型的 URL (請替換為您自己的模型網址) 🚨
+        const URL = "https://teachablemachine.withgoogle.com/models/UGwLtPbgm/"; // 假設您將模型文件夾命名為 my_model
+
+        // 🚨 2. 裁剪區域定義 (x, y, w, h 代表數字在圖片中的座標和尺寸) 🚨
+        // *請務必根據您的血壓計螢幕位置進行調整！*
+        const CROP_AREAS = [
+            // 收縮壓 (Systolic) - 假設是三位數 (e.g., 120)
+            { id: "SYS_1", type: "S", x: 100, y: 150, w: 40, h: 60 }, // 收縮壓 第一位
+            { id: "SYS_2", type: "S", x: 145, y: 150, w: 40, h: 60 }, // 收縮壓 第二位
+            { id: "SYS_3", type: "S", x: 190, y: 150, w: 40, h: 60 }, // 收縮壓 第三位
+
+            // 舒張壓 (Diastolic) - 假設是兩位數 (e.g., 80)
+            { id: "DIA_1", type: "D", x: 100, y: 220, w: 40, h: 60 }, // 舒張壓 第一位
+            { id: "DIA_2", type: "D", x: 145, y: 220, w: 40, h: 60 }, // 舒張壓 第二位
+
+            // 如果有脈搏 (Pulse)，請自行加入 { id: "PUL_1", type: "P", x: ..., y: ..., w: ..., h: ... },
+        ];
+        // ----------------------------------------------------------------------
+
+
         let model, maxPredictions;
-        const DEFAULT_VALUE = "---"; // 設定未成功辨識時的預設值
+        const DEFAULT_VALUE = "---"; 
+        
+        // 建立一個隱藏的 Canvas 供裁剪和預測使用
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 224; // 預設 Teachable Machine 輸入尺寸
+        tempCanvas.height = 224;
+        const tempCtx = tempCanvas.getContext('2d');
+        
 
         // 頁面載入時初始化模型
         async function init() {
@@ -192,26 +220,23 @@
                 const modelURL = URL + "model.json";
                 const metadataURL = URL + "metadata.json";
 
-                // 嘗試載入模型
                 model = await tmImage.load(modelURL, metadataURL);
                 maxPredictions = model.getTotalClasses();
                 
-                // 載入成功時，確保數值為預設值 ---
                 document.getElementById('systolic-result').innerText = DEFAULT_VALUE;
                 document.getElementById('diastolic-result').innerText = DEFAULT_VALUE;
                 console.log("Teachable Machine 模型載入完成。");
-
-            } catch (error) {
-                // 這是您目前會遇到的情況 (URL為預留位置)
-                console.error("模型載入失敗，請檢查 URL (目前為預留位置): ", error);
+                // 這裡可以加入提示，例如：模型載入成功，請上傳圖片
                 
-                // 核心修正：即使載入失敗，也將兩個欄位都設回預設值 ---
-                document.getElementById('systolic-result').innerText = DEFAULT_VALUE; 
-                document.getElementById('diastolic-result').innerText = DEFAULT_VALUE;
+            } catch (error) {
+                console.error("模型載入失敗，請檢查 URL 及檔案路徑: ", error);
+                document.getElementById('systolic-result').innerText = "載入失敗";  
+                document.getElementById('diastolic-result').innerText = "載入失敗";
+                alert("AI模型載入失敗，請檢查 Teachable Machine URL 和檔案路徑是否正確。");
             }
         }
 
-        // 圖片上傳預覽
+        // 圖片上傳預覽 (這部分邏輯不變，保持您原本的 code)
         function previewImage() {
             const fileInput = document.getElementById('fileInput');
             const preview = document.getElementById('image-preview');
@@ -234,84 +259,128 @@
             }
         }
 
-        // 圖片辨識函式 (待您完成模型訓練後，需要在此處補齊邏輯)
+        // 核心辨識函式 (已整合 AI 邏輯)
         async function predict() {
             document.getElementById("predict-button").innerText = "辨識中...";
             document.getElementById("predict-button").disabled = true;
             document.getElementById("systolic-result").innerText = "分析中...";
             document.getElementById("diastolic-result").innerText = "分析中...";
-            
-            // ----------------------------------------------------
-            // 【臨時修正】註釋掉檢查 model 的程式碼，以便測試記錄功能
-            // ----------------------------------------------------
-            // if (!model) {
-            //     alert("模型尚未載入，請確認網路連線或模型網址。");
-            //     document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
-            //     document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
-            //     document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
-            //     return;
-            // }
-            // ----------------------------------------------------
+            document.getElementById("save-button").disabled = true;
+
+            if (!model) {
+                alert("模型尚未載入成功，無法辨識。");
+                document.getElementById("predict-button").innerText = "🧠 模型未載入";
+                document.getElementById("predict-button").disabled = false;
+                document.getElementById("systolic-result").innerText = "載入失敗";
+                document.getElementById("diastolic-result").innerText = "載入失敗";
+                return;
+            }
 
             const image = document.getElementById('image-preview');
-            let systolic = DEFAULT_VALUE;
-            let diastolic = DEFAULT_VALUE;
-            let isSuccessful = false;
+            if (!image.src || image.src.includes('#')) {
+                alert("請先上傳圖片！");
+                document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
+                document.getElementById("predict-button").disabled = false;
+                document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
+                document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
+                return;
+            }
 
+            // 1. 建立一個 Canvas 來處理原始圖片
+            const originalCanvas = document.createElement('canvas');
+            originalCanvas.width = image.naturalWidth;
+            originalCanvas.height = image.naturalHeight;
+            const originalCtx = originalCanvas.getContext('2d');
+            originalCtx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
+            
+            let systolicStr = "";
+            let diastolicStr = "";
+            let isSuccessful = true;
+            
             try {
-                // 如果模型未載入，這段 code 會使用隨機數
-                // 如果模型已載入，這段 code 會執行預測 (但因為 URL 是 placeholder，目前會失敗)
-                
-                // 【如果您想測試 AI，拿到 URL 後請務必解除上方註釋！】
-                
-                // 假設模型已載入，執行預測 (目前會跳過，使用隨機數)
-                // const prediction = await model.predict(image); 
+                for (const area of CROP_AREAS) {
+                    // 2. 裁剪單個數字的區域 (使用原始圖片的 Canvas)
+                    // 從原圖中抓取像素數據
+                    const croppedImageData = originalCtx.getImageData(area.x, area.y, area.w, area.h);
+                    
+                    // 3. 將裁剪的數字繪製到臨時 Canvas，並縮放至 224x224 (模型所需的尺寸)
+                    // 由於 tmImage.predict 函式預期輸入的是 224x224，這裡我們使用繪圖並縮放。
+                    tempCtx.clearRect(0, 0, 224, 224);
+                    const tempImg = new Image();
+                    tempImg.src = URL.createObjectURL(new Blob([tempCanvas.toBlob(blob => {
+                        // 簡單將裁剪數據轉為 Blob (這步操作較複雜，簡化為直接使用 tmImage.predict 處理 ImageData 較佳)
+                        // 這裡為了讓程式碼更精簡，我們使用 tmImage.predict 的彈性
+                        // 實際操作上，直接將裁剪後的圖像數據轉為 224x224 的 tensor 較為嚴謹。
+                        
+                        // 我們這裡採取更簡單但更依賴 tmImage/TF.js 彈性的方法：
+                        // 將裁剪區域直接繪製到一個新的 Canvas (尺寸為裁剪尺寸)，再讓模型處理。
+                        const digitCanvas = document.createElement('canvas');
+                        digitCanvas.width = area.w;
+                        digitCanvas.height = area.h;
+                        digitCanvas.getContext('2d').putImageData(croppedImageData, 0, 0);
+                        
+                        return digitCanvas;
+                    }, 'image/png')]));
 
-                // ⚠️ 實際結果解析邏輯：請替換為您從 Teachable Machine 獲得的真正邏輯 ⚠️
-                // *************** START: 替換區 (保留隨機數用於測試記錄功能) ***************
-                
-                // 目前使用隨機數作為成功範例
-                if (true) { // 永遠為真，確保每次都能產生隨機數
-                    systolic = Math.floor(Math.random() * (160 - 90 + 1)) + 90;  
-                    diastolic = Math.floor(Math.random() * (100 - 60 + 1)) + 60;
-                    isSuccessful = true;
-                } 
-                
-                // *************** END: 替換區 *****************
+                    // 4. 執行預測
+                    const prediction = await model.predict(digitCanvas);
+
+                    // 找出信心度最高的類別
+                    const highestPrediction = prediction.reduce((prev, current) => 
+                        (prev.probability > current.probability) ? prev : current
+                    );
+                    
+                    // 數字類別名稱應該是 "0", "1", "2", ...
+                    const predictedDigit = highestPrediction.className; 
+                    
+                    // 5. 組裝數值
+                    if (predictedDigit !== undefined && highestPrediction.probability > 0.7) { // 設置信心度閾值
+                        if (area.type === "S") {
+                            systolicStr += predictedDigit;
+                        } else if (area.type === "D") {
+                            diastolicStr += predictedDigit;
+                        }
+                    } else {
+                        console.warn(`辨識項目 ${area.id} 信心度不足 (${(highestPrediction.probability * 100).toFixed(1)}%)，設為失敗。`);
+                        isSuccessful = false;
+                        break; // 只要一個數字失敗，整個結果視為失敗
+                    }
+                }
 
             } catch (error) {
                 console.error("辨識過程發生錯誤:", error);
-                // 發生錯誤時，數值保持為 DEFAULT_VALUE ("---")
+                isSuccessful = false;
             }
 
+            // 6. 顯示結果
+            const finalSystolic = isSuccessful && systolicStr.length > 0 ? systolicStr : DEFAULT_VALUE;
+            const finalDiastolic = isSuccessful && diastolicStr.length > 0 ? diastolicStr : DEFAULT_VALUE;
 
-            // 顯示結果
-            document.getElementById("systolic-result").innerText = systolic;
-            document.getElementById("diastolic-result").innerText = diastolic;
+            document.getElementById("systolic-result").innerText = finalSystolic;
+            document.getElementById("diastolic-result").innerText = finalDiastolic;
 
             // 恢復按鈕
-            document.getElementById("predict-button").innerText = isSuccessful ? "✅ 辨識成功" : "❌ 辨識失敗，請重試";
+            const successText = `✅ 辨識成功 (${finalSystolic}/${finalDiastolic})`;
+            const failureText = `❌ 辨識失敗，請重試`;
+            document.getElementById("predict-button").innerText = isSuccessful && finalSystolic !== DEFAULT_VALUE ? successText : failureText;
             document.getElementById("predict-button").disabled = false;
             
-            // 只有當辨識成功且數值不為 "---" 時，才啟用儲存按鈕
-            if (systolic !== DEFAULT_VALUE && diastolic !== DEFAULT_VALUE) {
+            // 啟用/禁用儲存按鈕
+            if (finalSystolic !== DEFAULT_VALUE && finalDiastolic !== DEFAULT_VALUE) {
                 document.getElementById("save-button").disabled = false;
             } else {
                 document.getElementById("save-button").disabled = true;
             }
         }
 
-        // 資料寫入 Google Sheet 函式
+        // 資料寫入 Google Sheet 函式 (保持您原本的邏輯，但 GOOGLE_SCRIPT_URL 需替換)
         function saveToSheet() {
-            // 讀取結果，並去除前後空格
             const systolicRaw = document.getElementById("systolic-result").innerText.trim();
             const diastolicRaw = document.getElementById("diastolic-result").innerText.trim();
 
-            // 🚨 關鍵修正：將字串強制轉換為數字 🚨
-            const systolic = Number(systolicRaw); 
-            const diastolic = Number(diastolicRaw); 
+            const systolic = Number(systolicRaw);  
+            const diastolic = Number(diastolicRaw);  
 
-            // 再次檢查數值是否有效 (使用轉換後的數字進行檢查)
             if (systolicRaw === DEFAULT_VALUE || diastolicRaw === DEFAULT_VALUE || isNaN(systolic) || isNaN(diastolic)) {
                 alert("辨識數值無效或格式錯誤，無法儲存。");
                 return;
@@ -321,38 +390,31 @@
             document.getElementById("save-button").disabled = true;
             
             // 🚨 請替換為您 Google Apps Script 的 Web App URL 🚨
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; 
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; // 這是示例 URL
             
             const data = {
                 'timestamp': new Date().toLocaleString(),
-                // 傳送乾淨的數字 (Apps Script 期望的格式)
-                'systolic': systolic, 
+                'systolic': systolic,  
                 'diastolic': diastolic
             };
 
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', 
+                mode: 'no-cors',  
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data)
             })
             .then(() => {
-                // 由於我們使用 'no-cors'，fetch 不會拋出網路錯誤，但它不會讀取響應。
-                // 我們假設請求成功發出。
-                
-                // 為了用戶體驗，延遲一點時間再顯示成功訊息
                 setTimeout(() => {
                     alert("血壓數據已成功記錄到 Google Sheet！");
                     document.getElementById("save-button").innerText = "💾 記錄完成";
                     document.getElementById("save-button").disabled = true;
-                    // document.getElementById("predict-button").innerText = "🧠 開始辨識數值"; // 保持原狀或根據您的流程重置
-                }, 500); // 延遲 0.5 秒
+                }, 500); 
 
             })
             .catch(error => {
-                // 只有網路連線失敗才會觸發這裡 (不會因為 Apps Script 內部錯誤而觸發)
                 console.error('記錄失敗:', error);
                 alert("數據記錄失敗，請檢查網路連線或 Apps Script URL。");
                 document.getElementById("save-button").innerText = "💾 記錄失敗";
