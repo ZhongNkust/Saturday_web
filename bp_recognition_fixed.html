@@ -182,24 +182,30 @@
     
     <script>
         // ----------------------------------------------------------------------
-        // 【核心設定區】請務必替換
+        // 【核心設定區】
         // ----------------------------------------------------------------------
-        // 🚨 1. Teachable Machine 模型的 URL (請替換為您自己的模型網址) 🚨
-        const URL = "https://teachablemachine.withgoogle.com/models/UGwLtPbgm/"; // 假設您將模型文件夾命名為 my_model
+        // 🚨 1. Teachable Machine 模型的 URL (已更新為您的網址) 🚨
+        const URL = "https://teachablemachine.withgoogle.com/models/UGwLtPbgm/"; 
 
-        // 🚨 2. 裁剪區域定義 (x, y, w, h 代表數字在圖片中的座標和尺寸) 🚨
-        // *請務必根據您的血壓計螢幕位置進行調整！*
+        // 【新增】標準化處理尺寸 (基於您的圖片比例，寬度設為 800)
+        const STANDARD_WIDTH = 800;  
+        const STANDARD_HEIGHT = 600; 
+
+        // 🚨 2. 裁剪區域定義 (已更新為基於 800x600 尺寸的精準座標) 🚨
+        // *這些座標是為了在圖片縮放為 800x600 後，能準確捕捉數字區塊*
         const CROP_AREAS = [
-            // 收縮壓 (Systolic) - 假設是三位數 (e.g., 120)
-            { id: "SYS_1", type: "S", x: 100, y: 150, w: 40, h: 60 }, // 收縮壓 第一位
-            { id: "SYS_2", type: "S", x: 145, y: 150, w: 40, h: 60 }, // 收縮壓 第二位
-            { id: "SYS_3", type: "S", x: 190, y: 150, w: 40, h: 60 }, // 收縮壓 第三位
+            // 收縮壓 (Systolic) - 左上角 (數字 108)
+            { id: "SYS_1", type: "S", x: 40, y: 104, w: 108, h: 160 },   // 第一位 (1)
+            { id: "SYS_2", type: "S", x: 152, y: 104, w: 108, h: 160 },  // 第二位 (0)
+            { id: "SYS_3", type: "S", x: 264, y: 104, w: 108, h: 160 },  // 第三位 (8)
 
-            // 舒張壓 (Diastolic) - 假設是兩位數 (e.g., 80)
-            { id: "DIA_1", type: "D", x: 100, y: 220, w: 40, h: 60 }, // 舒張壓 第一位
-            { id: "DIA_2", type: "D", x: 145, y: 220, w: 40, h: 60 }, // 舒張壓 第二位
+            // 舒張壓 (Diastolic) - 右上角 (數字 71)
+            { id: "DIA_1", type: "D", x: 424, y: 104, w: 108, h: 160 },  // 第一位 (7)
+            { id: "DIA_2", type: "D", x: 536, y: 104, w: 108, h: 160 },  // 第二位 (1)
 
-            // 如果有脈搏 (Pulse)，請自行加入 { id: "PUL_1", type: "P", x: ..., y: ..., w: ..., h: ... },
+            // 如果您需要脈搏 (Pulse) 79 的座標，可以自行添加：
+            // { id: "PUL_1", type: "P", x: 424, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第一位 (7)
+            // { id: "PUL_2", type: "P", x: 536, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第二位 (9)
         ];
         // ----------------------------------------------------------------------
 
@@ -207,9 +213,9 @@
         let model, maxPredictions;
         const DEFAULT_VALUE = "---"; 
         
-        // 建立一個隱藏的 Canvas 供裁剪和預測使用
+        // 建立一個隱藏的 Canvas 供裁剪和預測使用 (尺寸固定為模型輸入 224x224)
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 224; // 預設 Teachable Machine 輸入尺寸
+        tempCanvas.width = 224; 
         tempCanvas.height = 224;
         const tempCtx = tempCanvas.getContext('2d');
         
@@ -226,7 +232,6 @@
                 document.getElementById('systolic-result').innerText = DEFAULT_VALUE;
                 document.getElementById('diastolic-result').innerText = DEFAULT_VALUE;
                 console.log("Teachable Machine 模型載入完成。");
-                // 這裡可以加入提示，例如：模型載入成功，請上傳圖片
                 
             } catch (error) {
                 console.error("模型載入失敗，請檢查 URL 及檔案路徑: ", error);
@@ -236,7 +241,7 @@
             }
         }
 
-        // 圖片上傳預覽 (這部分邏輯不變，保持您原本的 code)
+        // 圖片上傳預覽 (邏輯不變)
         function previewImage() {
             const fileInput = document.getElementById('fileInput');
             const preview = document.getElementById('image-preview');
@@ -259,7 +264,7 @@
             }
         }
 
-        // 核心辨識函式 (已整合 AI 邏輯)
+        // 核心辨識函式 (已整合固定尺寸縮放和新座標)
         async function predict() {
             document.getElementById("predict-button").innerText = "辨識中...";
             document.getElementById("predict-button").disabled = true;
@@ -286,12 +291,14 @@
                 return;
             }
 
-            // 1. 建立一個 Canvas 來處理原始圖片
+            // 1. 建立一個 Canvas，並強制尺寸為 STANDARD_WIDTH x STANDARD_HEIGHT
             const originalCanvas = document.createElement('canvas');
-            originalCanvas.width = image.naturalWidth;
-            originalCanvas.height = image.naturalHeight;
+            originalCanvas.width = STANDARD_WIDTH;   // 800
+            originalCanvas.height = STANDARD_HEIGHT; // 600
             const originalCtx = originalCanvas.getContext('2d');
-            originalCtx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
+
+            // 繪製圖片時，將其縮放到標準尺寸。這確保了裁剪座標的準確性。
+            originalCtx.drawImage(image, 0, 0, STANDARD_WIDTH, STANDARD_HEIGHT);
             
             let systolicStr = "";
             let diastolicStr = "";
@@ -299,30 +306,18 @@
             
             try {
                 for (const area of CROP_AREAS) {
-                    // 2. 裁剪單個數字的區域 (使用原始圖片的 Canvas)
-                    // 從原圖中抓取像素數據
+                    // 2. 裁剪單個數字的區域 (使用標準化後的 Canvas 進行裁剪)
+                    // 從標準化後的圖片中抓取像素數據
                     const croppedImageData = originalCtx.getImageData(area.x, area.y, area.w, area.h);
                     
-                    // 3. 將裁剪的數字繪製到臨時 Canvas，並縮放至 224x224 (模型所需的尺寸)
-                    // 由於 tmImage.predict 函式預期輸入的是 224x224，這裡我們使用繪圖並縮放。
-                    tempCtx.clearRect(0, 0, 224, 224);
-                    const tempImg = new Image();
-                    tempImg.src = URL.createObjectURL(new Blob([tempCanvas.toBlob(blob => {
-                        // 簡單將裁剪數據轉為 Blob (這步操作較複雜，簡化為直接使用 tmImage.predict 處理 ImageData 較佳)
-                        // 這裡為了讓程式碼更精簡，我們使用 tmImage.predict 的彈性
-                        // 實際操作上，直接將裁剪後的圖像數據轉為 224x224 的 tensor 較為嚴謹。
-                        
-                        // 我們這裡採取更簡單但更依賴 tmImage/TF.js 彈性的方法：
-                        // 將裁剪區域直接繪製到一個新的 Canvas (尺寸為裁剪尺寸)，再讓模型處理。
-                        const digitCanvas = document.createElement('canvas');
-                        digitCanvas.width = area.w;
-                        digitCanvas.height = area.h;
-                        digitCanvas.getContext('2d').putImageData(croppedImageData, 0, 0);
-                        
-                        return digitCanvas;
-                    }, 'image/png')]));
+                    // 臨時 Canvas 用於保存裁剪後的單個數字
+                    const digitCanvas = document.createElement('canvas');
+                    digitCanvas.width = area.w;
+                    digitCanvas.height = area.h;
+                    // 將裁剪數據放進 digitCanvas
+                    digitCanvas.getContext('2d').putImageData(croppedImageData, 0, 0);
 
-                    // 4. 執行預測
+                    // 4. 執行預測：模型會自動將 digitCanvas (例如 108x160) 縮放為 224x224 進行預測
                     const prediction = await model.predict(digitCanvas);
 
                     // 找出信心度最高的類別
@@ -330,7 +325,6 @@
                         (prev.probability > current.probability) ? prev : current
                     );
                     
-                    // 數字類別名稱應該是 "0", "1", "2", ...
                     const predictedDigit = highestPrediction.className; 
                     
                     // 5. 組裝數值
@@ -343,7 +337,7 @@
                     } else {
                         console.warn(`辨識項目 ${area.id} 信心度不足 (${(highestPrediction.probability * 100).toFixed(1)}%)，設為失敗。`);
                         isSuccessful = false;
-                        break; // 只要一個數字失敗，整個結果視為失敗
+                        break; 
                     }
                 }
 
@@ -373,7 +367,7 @@
             }
         }
 
-        // 資料寫入 Google Sheet 函式 (保持您原本的邏輯，但 GOOGLE_SCRIPT_URL 需替換)
+        // 資料寫入 Google Sheet 函式 (邏輯不變)
         function saveToSheet() {
             const systolicRaw = document.getElementById("systolic-result").innerText.trim();
             const diastolicRaw = document.getElementById("diastolic-result").innerText.trim();
@@ -390,7 +384,7 @@
             document.getElementById("save-button").disabled = true;
             
             // 🚨 請替換為您 Google Apps Script 的 Web App URL 🚨
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; // 這是示例 URL
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; 
             
             const data = {
                 'timestamp': new Date().toLocaleString(),
