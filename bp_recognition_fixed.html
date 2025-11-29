@@ -369,7 +369,7 @@ const CROP_AREAS = [
                     // 🚨 5. 組裝數值 - 關鍵修正：從類別名稱中提取純數字 🚨
                     const actualDigit = predictedClassName.replace('Number_', '').trim();
                     
-                    if (actualDigit !== undefined && highestPrediction.probability > 0.5) { // 設置信心度閾值為 0.65
+                    if (actualDigit !== undefined && highestPrediction.probability > 0.8) { // 設置信心度閾值為 0.65
                         if (area.type === "S") {
                             systolicStr += actualDigit;
                         } else if (area.type === "D") {
