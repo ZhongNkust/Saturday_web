@@ -16,7 +16,7 @@
         .container {
             max-width: 800px;  
             margin: auto;
-            background: #f0f8ff; /* 淡藍白色容器背景 */
+            background: #f0ffef; /* 調整為更淺的背景色 */
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -24,7 +24,7 @@
         h1 {
             color: #5a5a5a;
         }
-        h2 {
+        h2, h3 { /* 增加 h3 樣式 */
             color: #007bff; /* 藍色主色 */
             margin-top: 25px;
         }
@@ -119,6 +119,29 @@
             background-color: #5a5a5a; /* 關閉狀態的灰色 */
             cursor: not-allowed;
         }
+        
+        /* 裁剪預覽區樣式 */
+        #crop-preview-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            border: 1px dashed #007bff;
+            padding: 10px;
+            background-color: #eaf8ff;
+            border-radius: 5px;
+        }
+        .digit-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 5px;
+        }
+        .digit-preview canvas {
+            border: 2px solid #555;
+            border-radius: 3px;
+        }
+
 
         /* 響應式設計 */
         @media (max-width: 680px) {
@@ -162,6 +185,11 @@
             <p style="font-size: 0.9em; color: #888;">請先上傳圖片，再點擊開始辨識。</p>
             <hr>
 
+            <h3>🔍 裁剪預覽 (除錯用)</h3>
+            <div id="crop-preview-container">
+                <p style="color: #888; font-style: italic;">點擊「開始辨識」後，這裡將顯示裁剪後的數字。</p>
+            </div>
+            <hr>
             <h2>辨識結果與記錄</h2>
             
             <div class="result-box">
@@ -210,11 +238,11 @@ const CROP_AREAS = [
 // ----------------------------------------------------------------------
 
         let model, maxPredictions;
-        const DEFAULT_VALUE = "---"; 
+        const DEFAULT_VALUE = "---";  
         
         // 建立一個隱藏的 Canvas 供裁剪和預測使用 (尺寸固定為模型輸入 224x224)
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = 224; 
+        tempCanvas.width = 224;  
         tempCanvas.height = 224;
         const tempCtx = tempCanvas.getContext('2d');
         
@@ -249,6 +277,7 @@ const CROP_AREAS = [
             document.getElementById("predict-button").disabled = true;  
             document.getElementById("save-button").disabled = true;
             document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
+            document.getElementById("crop-preview-container").innerHTML = '<p style="color: #888; font-style: italic;">點擊「開始辨識」後，這裡將顯示裁剪後的數字。</p>'; // 清空裁剪預覽區
 
             if (file) {
                 const reader = new FileReader();
@@ -292,7 +321,7 @@ const CROP_AREAS = [
 
             // 1. 建立一個 Canvas，並強制尺寸為 STANDARD_WIDTH x STANDARD_HEIGHT
             const originalCanvas = document.createElement('canvas');
-            originalCanvas.width = STANDARD_WIDTH;   // 800
+            originalCanvas.width = STANDARD_WIDTH;    // 800
             originalCanvas.height = STANDARD_HEIGHT; // 600
             const originalCtx = originalCanvas.getContext('2d');
 
@@ -302,6 +331,9 @@ const CROP_AREAS = [
             let systolicStr = "";
             let diastolicStr = "";
             let isSuccessful = true;
+            
+            // 清空裁剪預覽區
+            document.getElementById("crop-preview-container").innerHTML = '';
             
             try {
                 for (const area of CROP_AREAS) {
@@ -316,27 +348,40 @@ const CROP_AREAS = [
                     // 將裁剪數據放進 digitCanvas
                     digitCanvas.getContext('2d').putImageData(croppedImageData, 0, 0);
 
+                    // 🚨 視覺化除錯：將裁剪後的 Canvas 顯示在網頁上 🚨
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'digit-preview';
+                    previewDiv.innerHTML = `<p style="font-size: 0.8em; margin: 2px 0;">${area.id}</p>`;
+                    previewDiv.appendChild(digitCanvas);
+                    document.getElementById("crop-preview-container").appendChild(previewDiv);
+
+
                     // 4. 執行預測：模型會自動將 digitCanvas (例如 108x160) 縮放為 224x224 進行預測
                     const prediction = await model.predict(digitCanvas);
 
                     // 找出信心度最高的類別
-                    const highestPrediction = prediction.reduce((prev, current) => 
+                    const highestPrediction = prediction.reduce((prev, current) =>  
                         (prev.probability > current.probability) ? prev : current
                     );
                     
-                    const predictedDigit = highestPrediction.className; 
+                    const predictedClassName = highestPrediction.className;  
                     
-                    // 5. 組裝數值
-                    if (predictedDigit !== undefined && highestPrediction.probability > 0.64) { // 設置信心度閾值
+                    // 🚨 5. 組裝數值 - 關鍵修正：從類別名稱中提取純數字 🚨
+                    const actualDigit = predictedClassName.replace('Number_', '').trim();
+                    
+                    if (actualDigit !== undefined && highestPrediction.probability > 0.65) { // 設置信心度閾值為 0.65
                         if (area.type === "S") {
-                            systolicStr += predictedDigit;
+                            systolicStr += actualDigit;
                         } else if (area.type === "D") {
-                            diastolicStr += predictedDigit;
+                            diastolicStr += actualDigit;
                         }
+                        // 額外輸出信心度到 Console
+                        console.log(`[${area.id}] 預測: ${actualDigit} (信賴度: ${(highestPrediction.probability * 100).toFixed(1)}%)`);
+
                     } else {
                         console.warn(`辨識項目 ${area.id} 信心度不足 (${(highestPrediction.probability * 100).toFixed(1)}%)，設為失敗。`);
                         isSuccessful = false;
-                        break; 
+                        break;  
                     }
                 }
 
