@@ -92,10 +92,22 @@
             border-radius: 6px;
             border: 1px solid #ddd;
             margin-bottom: 20px;
+            text-align: left; /* 讓結果靠左對齊 */
+        }
+        .result-box p {
+            margin: 8px 0;
+            padding-left: 15px;
         }
         .result-box strong {
             font-size: 1.5em;
             color: #ff6600; /* 使用橙色突出結果 */
+        }
+        /* 迴歸分析結果的樣式 */
+        .regression-message {
+            font-size: 1.1em;
+            font-weight: bold;
+            display: inline;
+            margin-top: 10px;
         }
 
         /* 功能按鈕 (辨識/儲存) */
@@ -134,7 +146,7 @@
 
     </style>
 </head>
-<body>
+<body onload="init()">
     <div class="container">
         
         <button class="back-button" onclick="history.back()">
@@ -168,6 +180,7 @@
             <div class="result-box">
                 <p>收縮壓 (Systolic): <strong id="systolic-result">---</strong> mmHg</p>
                 <p>舒張壓 (Diastolic): <strong id="diastolic-result">---</strong> mmHg</p>
+                <p>迴歸: <span id="regression-result" class="regression-message" style="color: #5a5a5a;">---</span></p>
             </div>
             
             <button class="action-button" id="save-button" onclick="saveToSheet()" disabled>
@@ -193,21 +206,24 @@ const STANDARD_WIDTH = 800;
 const STANDARD_HEIGHT = 600; 
 
 // 🚨 2. 裁剪區域定義 (已更新為基於 IMG_5554.jpg 的微調座標) 🚨
-// 針對圖片 IMG_5554.jpg (讀數 110/59) 進行優化
 const CROP_AREAS = [
-    // 收縮壓 (Systolic) - 左上角 (數字 110)
+    // 收縮壓 (Systolic) - 左上角 
     { id: "SYS_1", type: "S", x: 15, y: 104, w: 108, h: 160 },   // 第一位 (1)
     { id: "SYS_2", type: "S", x: 125, y: 104, w: 108, h: 160 },  // 第二位 (1)
     { id: "SYS_3", type: "S", x: 237, y: 104, w: 108, h: 160 },  // 第三位 (0)
 
-    // 舒張壓 (Diastolic) - 右上角 (數字 59)
+    // 舒張壓 (Diastolic) - 右上角 
     { id: "DIA_1", type: "D", x: 540, y: 104, w: 108, h: 160 },  // 第一位 (5)
     { id: "DIA_2", type: "D", x: 650, y: 104, w: 108, h: 160 },  // 第二位 (9)
-
-    // 脈搏 (Pulse) - 右下角 (數字 74)
-    // { id: "PUL_1", type: "P", x: 428, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第一位 (7)
-    // { id: "PUL_2", type: "P", x: 540, y: 400, w: 108, h: 160 }, // 脈搏 (Pulse) 第二位 (4)
 ];
+
+// 🚨 3. 線性迴歸模型設定 🚨
+const REGRESSION_SLOPE = 0.0496;     // 斜率 (m)
+const REGRESSION_INTERCEPT = 107.33; // 截距 (b)
+const REGRESSION_TOLERANCE = 5;      // 容許誤差範圍 (± 5 mmHg)
+
+// 🚨 4. Google Apps Script 的 Web App URL 🚨
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; 
 // ----------------------------------------------------------------------
 
         let model, maxPredictions;
@@ -231,17 +247,19 @@ const CROP_AREAS = [
                 
                 document.getElementById('systolic-result').innerText = DEFAULT_VALUE;
                 document.getElementById('diastolic-result').innerText = DEFAULT_VALUE;
+                document.getElementById('regression-result').innerText = DEFAULT_VALUE;
                 console.log("Teachable Machine 模型載入完成。");
                 
             } catch (error) {
                 console.error("模型載入失敗，請檢查 URL 及檔案路徑: ", error);
                 document.getElementById('systolic-result').innerText = "載入失敗"; 
                 document.getElementById('diastolic-result').innerText = "載入失敗";
+                document.getElementById('regression-result').innerText = "載入失敗";
                 alert("AI模型載入失敗，請檢查 Teachable Machine URL 和檔案路徑是否正確。");
             }
         }
 
-        // 圖片上傳預覽 (邏輯已移除清空裁剪預覽區的程式碼)
+        // 圖片上傳預覽
         function previewImage() {
             const fileInput = document.getElementById('fileInput');
             const preview = document.getElementById('image-preview');
@@ -251,6 +269,11 @@ const CROP_AREAS = [
             document.getElementById("save-button").disabled = true;
             document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
             
+            // 重置結果顯示
+            document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
+            document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
+            document.getElementById("regression-result").innerText = DEFAULT_VALUE;
+            
 
             if (file) {
                 const reader = new FileReader();
@@ -258,39 +281,67 @@ const CROP_AREAS = [
                     preview.src = e.target.result;
                     preview.style.display = 'block';
                     document.getElementById("predict-button").disabled = false; 
-                    document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
-                    document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
                 }
                 reader.readAsDataURL(file);
             }
         }
 
-        // 核心辨識函式 (已移除裁剪預覽的邏輯)
+        /**
+         * 執行線性迴歸判斷
+         * @param {number} systolic 實際收縮壓 (y)
+         * @param {number} diastolic 實際舒張壓 (x)
+         */
+        function runRegressionAnalysis(systolic, diastolic) {
+            const resultElement = document.getElementById('regression-result');
+            
+            // 1. 計算預測的收縮壓 (y_pred)
+            const predictedSystolic = REGRESSION_SLOPE * diastolic + REGRESSION_INTERCEPT;
+
+            // 2. 計算實際值與預測值的差值 (殘差)
+            const residual = Math.abs(systolic - predictedSystolic);
+            
+            let message = "";
+            let color = ""; 
+
+            // 3. 執行 If/Else 判斷
+            if (residual <= REGRESSION_TOLERANCE) {
+                // 殘差在容許範圍內，表示符合線性迴歸
+                message = "身體健康，請繼續保持";
+                color = "green"; 
+            } else {
+                // 殘差超出容許範圍，表示較為異常
+                message = "這次的血壓較為異常，請多留意身體";
+                color = "red"; 
+            }
+
+            // 4. 更新 HTML 顯示結果
+            // 增加提示：(與預測值 ${predictedSystolic.toFixed(1)})
+            resultElement.innerHTML = `<span style="color: ${color}; font-weight: bold;">${message}</span>`;
+            console.log(`[迴歸分析] 預測值: ${predictedSystolic.toFixed(2)}, 殘差: ${residual.toFixed(2)}。`);
+        }
+        
+        // 核心辨識函式
         async function predict() {
             document.getElementById("predict-button").innerText = "辨識中...";
             document.getElementById("predict-button").disabled = true;
             document.getElementById("systolic-result").innerText = "分析中...";
             document.getElementById("diastolic-result").innerText = "分析中...";
+            document.getElementById("regression-result").innerText = "分析中...";
             document.getElementById("save-button").disabled = true;
 
             if (!model) {
                 alert("模型尚未載入成功，無法辨識。");
+                // ... 錯誤處理略 ...
                 document.getElementById("predict-button").innerText = "🧠 模型未載入";
                 document.getElementById("predict-button").disabled = false;
                 document.getElementById("systolic-result").innerText = "載入失敗";
                 document.getElementById("diastolic-result").innerText = "載入失敗";
+                document.getElementById("regression-result").innerText = "---";
                 return;
             }
 
             const image = document.getElementById('image-preview');
-            if (!image.src || image.src.includes('#')) {
-                alert("請先上傳圖片！");
-                document.getElementById("predict-button").innerText = "🧠 開始辨識數值";
-                document.getElementById("predict-button").disabled = false;
-                document.getElementById("systolic-result").innerText = DEFAULT_VALUE;
-                document.getElementById("diastolic-result").innerText = DEFAULT_VALUE;
-                return;
-            }
+            // ... 圖片檢查略 ...
 
             // 1. 建立一個 Canvas，並強制尺寸為 STANDARD_WIDTH x STANDARD_HEIGHT
             const originalCanvas = document.createElement('canvas');
@@ -298,7 +349,6 @@ const CROP_AREAS = [
             originalCanvas.height = STANDARD_HEIGHT; // 600
             const originalCtx = originalCanvas.getContext('2d');
 
-            // 繪製圖片時，將其縮放到標準尺寸。這確保了裁剪座標的準確性。
             originalCtx.drawImage(image, 0, 0, STANDARD_WIDTH, STANDARD_HEIGHT);
             
             let systolicStr = "";
@@ -308,17 +358,14 @@ const CROP_AREAS = [
             try {
                 for (const area of CROP_AREAS) {
                     // 2. 裁剪單個數字的區域 (使用標準化後的 Canvas 進行裁剪)
-                    // 從標準化後的圖片中抓取像素數據
                     const croppedImageData = originalCtx.getImageData(area.x, area.y, area.w, area.h);
                     
-                    // 臨時 Canvas 用於保存裁剪後的單個數字
                     const digitCanvas = document.createElement('canvas');
                     digitCanvas.width = area.w;
                     digitCanvas.height = area.h;
-                    // 將裁剪數據放進 digitCanvas
                     digitCanvas.getContext('2d').putImageData(croppedImageData, 0, 0);
 
-                    // 4. 執行預測：模型會自動將 digitCanvas (例如 108x160) 縮放為 224x224 進行預測
+                    // 4. 執行預測
                     const prediction = await model.predict(digitCanvas);
 
                     // 找出信心度最高的類別
@@ -328,22 +375,22 @@ const CROP_AREAS = [
                     
                     const predictedClassName = highestPrediction.className;  
                     
-                    // 🚨 5. 組裝數值 - 關鍵修正：從類別名稱中提取純數字 🚨
+                    // 🚨 5. 組裝數值 - 從類別名稱中提取純數字 🚨
                     const actualDigit = predictedClassName.replace('Number_', '').trim();
                     
-                    if (actualDigit !== undefined && highestPrediction.probability > 0.7) { // 設置信心度閾值為 0.65
+                    const CONFIDENCE_THRESHOLD = 0.7; // 設置信心度閾值為 0.7
+                    if (actualDigit !== undefined && highestPrediction.probability > CONFIDENCE_THRESHOLD) { 
                         if (area.type === "S") {
                             systolicStr += actualDigit;
                         } else if (area.type === "D") {
                             diastolicStr += actualDigit;
                         }
-                        // 額外輸出信心度到 Console
                         console.log(`[${area.id}] 預測: ${actualDigit} (信賴度: ${(highestPrediction.probability * 100).toFixed(1)}%)`);
 
                     } else {
                         console.warn(`辨識項目 ${area.id} 信心度不足 (${(highestPrediction.probability * 100).toFixed(1)}%)，設為失敗。`);
                         isSuccessful = false;
-                        break; 
+                        break;  
                     }
                 }
 
@@ -358,19 +405,25 @@ const CROP_AREAS = [
 
             document.getElementById("systolic-result").innerText = finalSystolic;
             document.getElementById("diastolic-result").innerText = finalDiastolic;
+            
+
+            // 7. 執行迴歸分析 (僅在成功辨識出數值時)
+            const systolicNum = Number(finalSystolic);
+            const diastolicNum = Number(finalDiastolic);
+
+            if (!isNaN(systolicNum) && !isNaN(diastolicNum)) {
+                runRegressionAnalysis(systolicNum, diastolicNum);
+                document.getElementById("save-button").disabled = false; // 啟用儲存
+            } else {
+                document.getElementById("regression-result").innerText = "無法分析";
+                document.getElementById("save-button").disabled = true;
+            }
 
             // 恢復按鈕
             const successText = `✅ 辨識成功 (${finalSystolic}/${finalDiastolic})`;
             const failureText = `❌ 辨識失敗，請重試`;
             document.getElementById("predict-button").innerText = isSuccessful && finalSystolic !== DEFAULT_VALUE ? successText : failureText;
             document.getElementById("predict-button").disabled = false;
-            
-            // 啟用/禁用儲存按鈕
-            if (finalSystolic !== DEFAULT_VALUE && finalDiastolic !== DEFAULT_VALUE) {
-                document.getElementById("save-button").disabled = false;
-            } else {
-                document.getElementById("save-button").disabled = true;
-            }
         }
 
         // 資料寫入 Google Sheet 函式 (邏輯不變)
@@ -388,9 +441,6 @@ const CROP_AREAS = [
 
             document.getElementById("save-button").innerText = "儲存中...";
             document.getElementById("save-button").disabled = true;
-            
-            // 🚨 請替換為您 Google Apps Script 的 Web App URL 🚨
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; 
             
             const data = {
                 'timestamp': new Date().toLocaleString(),
@@ -422,8 +472,8 @@ const CROP_AREAS = [
             });
         }
 
-        // 啟動模型載入
-        init();
+        // 啟動模型載入 (使用 body onload 確保 init 在 DOM 準備好後執行)
+        // init();
     </script>
 </body>
 </html>
