@@ -181,7 +181,7 @@
                 <p>收縮壓 (Systolic): <strong id="systolic-result">---</strong> mmHg</p>
                 <p>舒張壓 (Diastolic): <strong id="diastolic-result">---</strong> mmHg</p>
                 <p>公式：收縮壓 (Systolic) = 0.0496*舒張壓 (Diastolic) + 107.33(截距)</p>
-                <p>容許誤差值(RMSE)：±5 mmHg</p>
+                <p>容許誤差值(RMSE)：±4.56 mmHg</p>
                 <p>迴歸: <span id="regression-result" class="regression-message" style="color: #5a5a5a;">---</span></p>
             </div>
             
@@ -222,7 +222,7 @@ const CROP_AREAS = [
 // 🚨 3. 線性迴歸模型設定 🚨
 const REGRESSION_SLOPE = 0.0496;     // 斜率 (m)
 const REGRESSION_INTERCEPT = 107.33; // 截距 (b)
-const REGRESSION_TOLERANCE = 5;      // 容許誤差範圍 (± 5 mmHg)
+const REGRESSION_TOLERANCE = 4.56;      // 容許誤差範圍 (± 5 mmHg)
 
 // 🚨 4. Google Apps Script 的 Web App URL 🚨
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRizxiYrgd2WDhDLLeU1-UrkIiWkFTwHcHf8ANkyCDTnET1mhfbXLQwpfQn3-tZsFL/exec'; 
